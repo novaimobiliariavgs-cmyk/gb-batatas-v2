@@ -143,6 +143,15 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div style="width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite"></div>Carregando...
 </div>
 
+<!-- MODAL COMISSÃO DETALHES -->
+<div class="modal-bg" id="modal-comissao">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-comissao').classList.remove('show')">&#x2715;</button>
+    <h3 id="modal-comissao-titulo">Comiss&#xe3;o</h3>
+    <div id="modal-comissao-lista" style="margin-top:12px"></div>
+  </div>
+</div>
+
 <!-- MODAL PAGAMENTO -->
 <div class="modal-bg" id="modal-pagamento">
   <div class="modal">
@@ -377,6 +386,8 @@ input:checked+.slider:before{transform:translateX(20px)}
       </div>
     </div>
 
+    <button onclick="renderFinanceiro()" style="width:100%;padding:10px;background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">&#x21BB; Atualizar</button>
+
     <!-- Cards de métricas -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:14px">
@@ -389,15 +400,17 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div id="fin-total-sacas" style="font-size:20px;font-weight:800;color:#1a5c2a">0</div>
         <div style="font-size:12px;color:#aaa;margin-top:4px">sacas vendidas</div>
       </div>
-      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #f9a825">
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #f9a825;cursor:pointer" onclick="abrirDetalheComissao('aberto')">
         <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Comiss&#xe3;o a Receber</div>
         <div id="fin-comissao-aberto" style="font-size:20px;font-weight:800;color:#e65100">R$ 0,00</div>
         <div id="fin-comissao-aberto-notas" style="font-size:12px;color:#aaa;margin-top:4px">0 em aberto</div>
+        <div style="font-size:11px;color:#f9a825;margin-top:4px">toque para ver notas &#x2192;</div>
       </div>
-      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #1a5c2a">
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #1a5c2a;cursor:pointer" onclick="abrirDetalheComissao('recebida')">
         <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Comiss&#xe3;o Recebida</div>
         <div id="fin-comissao-pago" style="font-size:20px;font-weight:800;color:#1a5c2a">R$ 0,00</div>
-        <div id="fin-comissao-pago-notas" style="font-size:12px;color:#aaa;margin-top:4px">0 pagas</div>
+        <div id="fin-comissao-pago-notas" style="font-size:12px;color:#aaa;margin-top:4px">0 recebidas</div>
+        <div style="font-size:11px;color:#1a5c2a;margin-top:4px">toque para ver notas &#x2192;</div>
       </div>
     </div>
 
@@ -772,6 +785,7 @@ function renderPagamentos(){
              (!fNota||String(f.num_nota).toLowerCase().includes(fNota))&&
              dentroIntervalo;
     });
+    window._finDados=fil;
     if(!fil.length){el.innerHTML="<div class='lista-vazia'><div style='font-size:36px;margin-bottom:8px'>&#x1F4ED;</div>Nenhum encontrado.</div>";return;}
     el.innerHTML=fil.map(function(f){
       var isPago=f.status==="pago";
@@ -789,6 +803,7 @@ function renderPagamentos(){
         "<div class='acoes'>"+
           "<button class='btn-emitir' onclick='gerarPagamento("+JSON.stringify(f).replace(/'/g,"&#39;")+")'> Emitir &#x2192;</button>"+
           "<button class=\"btn-pago"+(isPago?" pago":"")+"\" onclick=\"togglePago('"+f.id+"','"+(f.status||"aberto")+"')\">"+(isPago?"&#x21BA; Reabrir":"&#x2705; Marcar pago")+"</button>"+
+          "<button class=\"btn-pago"+(f.comissao_recebida?" pago":"")+"\" style=\"background:"+(f.comissao_recebida?"#1a5c2a":"#fff")+";color:"+(f.comissao_recebida?"#fff":"#1a5c2a")+";border:2px solid #1a5c2a\" onclick=\"toggleComissao('"+f.id+"',"+(f.comissao_recebida?"true":"false")+")\">"+(f.comissao_recebida?"&#x1F4B0; Com. Recebida":"&#x1F4B0; Receber Com.")+"</button>"+
           "<button class=\"btn-anexo\" onclick=\"abrirAnexos('"+ f.id +"')\">&#x1F4CE; Anexos</button>"+
         "</div>"+
       "</div>";
@@ -966,8 +981,8 @@ function renderFinanceiro(){
       var com=parseFloat(f.comissao_total)||0;
       totalVendas+=tv;
       totalSacas+=sc;
-      if(f.status==="pago"){comPago+=com;cntPago++;}
-      else{comAberto+=com;cntAberto++;}
+      if(f.comissao_recebida){comPago+=com;cntPago++;}
+      else if(com>0){comAberto+=com;cntAberto++;}
     });
     // Atualizar cards
     document.getElementById("fin-total-vendas").textContent=fmt(totalVendas);
@@ -976,7 +991,7 @@ function renderFinanceiro(){
     document.getElementById("fin-comissao-aberto").textContent=fmt(comAberto);
     document.getElementById("fin-comissao-aberto-notas").textContent=cntAberto+" em aberto";
     document.getElementById("fin-comissao-pago").textContent=fmt(comPago);
-    document.getElementById("fin-comissao-pago-notas").textContent=cntPago+" paga"+(cntPago!==1?"s":"");
+    document.getElementById("fin-comissao-pago-notas").textContent=cntPago+" recebida"+(cntPago!==1?"s":"");
     document.getElementById("fin-comissao-total").textContent=fmt(comAberto+comPago);
     // Lista detalhada
     if(!fil.length){el.innerHTML="<div class='lista-vazia'><div style='font-size:36px;margin-bottom:8px'>&#x1F4ED;</div>Nenhum registro.</div>";return;}
@@ -996,10 +1011,49 @@ function renderFinanceiro(){
         "</div>"+
         "<div style='display:flex;justify-content:space-between;margin-top:8px;font-size:13px'>"+
           "<span style='color:#555'>Venda: <strong>"+fmt(parseFloat(f.total_final)||0)+"</strong></span>"+
-          (com>0?"<span style='color:#1a5c2a'>Comiss&#xe3;o: <strong>"+fmt(com)+"</strong>"+(comSaco>0?" (R$"+comSaco.toFixed(2).replace(".",",")+"/saca)":"")+"</span>":"<span style='color:#aaa'>Sem comiss&#xe3;o</span>")+
+          (com>0?"<span style='color:"+(f.comissao_recebida?"#1a5c2a":"#e65100")+"'>Comiss&#xe3;o: <strong>"+fmt(com)+"</strong>"+(comSaco>0?" (R$"+comSaco.toFixed(2).replace(".",",")+"/saca)":"")+(f.comissao_recebida?" &#x2705;":" &#x23F0; a receber")+"</span>":"<span style='color:#aaa'>Sem comiss&#xe3;o</span>")+
         "</div>"+
       "</div>";
     }).join("");
+  });
+}
+
+function abrirDetalheComissao(tipo){
+  var dados=window._finDados||[];
+  var titulo=tipo==="aberto"?"Comiss&#xe3;o a Receber":"Comiss&#xe3;o Recebida";
+  var fil=dados.filter(function(f){
+    var com=parseFloat(f.comissao_total)||0;
+    if(com<=0) return false;
+    return tipo==="aberto"?!f.comissao_recebida:f.comissao_recebida;
+  });
+  document.getElementById("modal-comissao-titulo").innerHTML=titulo+" ("+fil.length+")";
+  var el=document.getElementById("modal-comissao-lista");
+  if(!fil.length){
+    el.innerHTML="<div style='text-align:center;padding:20px;color:#aaa'>Nenhuma nota.</div>";
+  } else {
+    el.innerHTML=fil.map(function(f){
+      var com=parseFloat(f.comissao_total)||0;
+      return "<div style='padding:12px 0;border-bottom:1px solid #f0f0f0'>"+
+        "<div style='display:flex;justify-content:space-between'>"+
+          "<strong>"+f.cliente+"</strong>"+
+          "<span style='font-size:12px;color:#aaa'>#"+f.num_nota+"</span>"+
+        "</div>"+
+        "<div style='font-size:12px;color:#888;margin-top:4px'>"+fmtData(f.data_venda)+" &middot; "+(parseFloat(f.sacas)||0)+" sacas &middot; "+f.cidade+"</div>"+
+        "<div style='display:flex;justify-content:space-between;margin-top:6px'>"+
+          "<span style='font-size:14px;color:#555'>Venda: "+fmt(parseFloat(f.total_final)||0)+"</span>"+
+          "<span style='font-size:14px;font-weight:700;color:#1a5c2a'>Com: "+fmt(com)+"</span>"+
+        "</div>"+
+      "</div>";
+    }).join("");
+  }
+  document.getElementById("modal-comissao").classList.add("show");
+}
+
+function toggleComissao(id, jaRecebida){
+  mostrarCarregando(true);
+  supa("fechamentos?id=eq."+id,{method:"PATCH",body:JSON.stringify({comissao_recebida:!jaRecebida})}).then(function(){
+    mostrarCarregando(false);
+    renderPagamentos();
   });
 }
 
