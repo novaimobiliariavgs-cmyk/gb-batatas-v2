@@ -184,6 +184,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <div class="aba ativa" onclick="mudarAba('venda',this)"><span class="ai">&#x1F4CB;</span>Venda</div>
     <div class="aba" onclick="mudarAba('fechamento',this)"><span class="ai">&#x1F91D;</span>Fechamento</div>
     <div class="aba" onclick="mudarAba('pagamento',this)"><span class="ai">&#x1F4B0;</span>Pagamento</div>
+    <div class="aba" onclick="mudarAba('financeiro',this)"><span class="ai">&#x1F4CA;</span>Financeiro</div>
   </div>
 </div>
 
@@ -298,6 +299,17 @@ input:checked+.slider:before{transform:translateX(20px)}
         <input type="text" id="f-desc-nome" autocomplete="off"/>
       </div>
     </div>
+    <p class="sl">Comiss&#xe3;o <span style="font-size:11px;color:#aaa;font-weight:400;text-transform:none">(interno, n&#xe3;o aparece na nota)</span></p>
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label>Valor da comiss&#xe3;o por saca (R$)</label>
+        <input type="text" id="f-comissao-saco" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#555">
+        <span>Total comiss&#xe3;o</span>
+        <span id="fr-comissao" style="font-weight:600;color:#1a5c2a">R$ 0,00</span>
+      </div>
+    </div>
     <p class="sl">Vencimento <span style="font-size:11px;color:#aaa;font-weight:400;text-transform:none">(opcional)</span></p>
     <div class="card">
       <label style="font-size:12px;color:#888;display:block;margin-bottom:8px">Prazo em dias</label>
@@ -349,6 +361,54 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <button class="btn-relatorio" onclick="gerarRelatorio()">&#x1F4CA; Gerar Relat&#xf3;rio PDF</button>
     <div id="lista-fechamentos"></div>
+  </div>
+</div>
+
+<!-- FINANCEIRO -->
+<div class="tela" id="tela-financeiro">
+  <div class="cabecalho"><img src="logo.jpg" alt="GB Batatas"/></div>
+  <div class="fb">
+    <p class="sl">Filtros</p>
+    <div class="filtros">
+      <div style="display:flex;align-items:center;gap:6px;flex:1">
+        <input type="date" id="fin-data-de" oninput="renderFinanceiro()" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none"/>
+        <span style="font-size:12px;color:#888;white-space:nowrap">at&#xe9;</span>
+        <input type="date" id="fin-data-ate" oninput="renderFinanceiro()" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none"/>
+      </div>
+    </div>
+
+    <!-- Cards de métricas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Vendas</div>
+        <div id="fin-total-vendas" style="font-size:20px;font-weight:800;color:#1a5c2a">R$ 0,00</div>
+        <div id="fin-total-notas" style="font-size:12px;color:#aaa;margin-top:4px">0 notas</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Sacas</div>
+        <div id="fin-total-sacas" style="font-size:20px;font-weight:800;color:#1a5c2a">0</div>
+        <div style="font-size:12px;color:#aaa;margin-top:4px">sacas vendidas</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #f9a825">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Comiss&#xe3;o a Receber</div>
+        <div id="fin-comissao-aberto" style="font-size:20px;font-weight:800;color:#e65100">R$ 0,00</div>
+        <div id="fin-comissao-aberto-notas" style="font-size:12px;color:#aaa;margin-top:4px">0 em aberto</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #1a5c2a">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Comiss&#xe3;o Recebida</div>
+        <div id="fin-comissao-pago" style="font-size:20px;font-weight:800;color:#1a5c2a">R$ 0,00</div>
+        <div id="fin-comissao-pago-notas" style="font-size:12px;color:#aaa;margin-top:4px">0 pagas</div>
+      </div>
+    </div>
+
+    <!-- Card total comissão -->
+    <div class="card" style="text-align:center;padding:16px;border:2px solid #1a5c2a;margin-bottom:16px">
+      <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Geral de Comiss&#xe3;o</div>
+      <div id="fin-comissao-total" style="font-size:26px;font-weight:800;color:#1a5c2a">R$ 0,00</div>
+    </div>
+
+    <p class="sl">Detalhamento</p>
+    <div id="fin-lista"></div>
   </div>
 </div>
 
@@ -621,6 +681,10 @@ function calcF(){
   document.getElementById("fr-desc").textContent="- "+fmt(dv);
   document.getElementById("fr-desc-row").style.display=dv>0?"flex":"none";
   document.getElementById("fr-total").textContent=fmt(Math.max(0,sub-fr-funrural-dv));
+  // Comissão
+  var comSaco=parseDinheiro("f-comissao-saco");
+  var comTotal=sacas*comSaco;
+  document.getElementById("fr-comissao").textContent=fmt(comTotal);
 }
 function gerarFechamento(){
   var cliente=vv("f-cliente"),cidade=vv("f-cidade");
@@ -645,6 +709,8 @@ function gerarFechamento(){
   var numStr=numVenda||nextNum();
   var dataVenda=document.getElementById("f-ac").dataset.dataVenda||hoje();
   localStorage.removeItem("gb_numvenda_"+cliente.toLowerCase().trim());
+  var comissaoSaco=parseDinheiro("f-comissao-saco");
+  var comissaoTotal=sacas*comissaoSaco;
   mostrarCarregando(true);
   supa("fechamentos",{method:"POST",body:JSON.stringify({
     num_nota:numStr,cliente:cliente,cidade:cidade,tel:tel,motorista:motorista,placa:placa,
@@ -653,7 +719,8 @@ function gerarFechamento(){
     subtotal:sub,frete_saco:freteSaco,frete_total:freteTotal,tem_frete:on,
     funrural:funrural,tem_funrural:temFunrural,desc_valor:descVal,desc_nome:descNome,
     total_final:totalFinal,dias:dias,vencimento:venc,status:"aberto",
-    data_fechamento:hoje(),data_venda:dataVenda
+    data_fechamento:hoje(),data_venda:dataVenda,
+    comissao_saco:comissaoSaco,comissao_total:comissaoTotal
   })}).then(function(res){
     mostrarCarregando(false);
     var li="";
@@ -875,6 +942,64 @@ function gerarRelatorio(){
           "<td style='border:1px solid #bbb;background:#f5f5f5'></td>"+
         "</tr></tfoot>"+
       "</table></div>");
+  });
+}
+
+function renderFinanceiro(){
+  var fDataDe=document.getElementById("fin-data-de").value;
+  var fDataAte=document.getElementById("fin-data-ate").value;
+  var el=document.getElementById("fin-lista");
+  el.innerHTML="<div class='lista-vazia'><div style='font-size:24px'>&#x23F3;</div>Carregando...</div>";
+  supa("fechamentos?order=created_at.desc&limit=500").then(function(lista){
+    if(!lista||lista.error){el.innerHTML="<div class='lista-vazia'>Erro ao carregar.</div>";return;}
+    var fil=lista.filter(function(f){
+      var dvConv=fmtData(f.data_venda||f.data_fechamento||"").split("/").reverse().join("-");
+      return (!fDataDe||dvConv>=fDataDe)&&(!fDataAte||dvConv<=fDataAte);
+    });
+    // Calcular métricas
+    var totalVendas=0, totalSacas=0;
+    var comAberto=0, comPago=0;
+    var cntAberto=0, cntPago=0;
+    fil.forEach(function(f){
+      var tv=parseFloat(f.total_final)||0;
+      var sc=parseFloat(f.sacas)||0;
+      var com=parseFloat(f.comissao_total)||0;
+      totalVendas+=tv;
+      totalSacas+=sc;
+      if(f.status==="pago"){comPago+=com;cntPago++;}
+      else{comAberto+=com;cntAberto++;}
+    });
+    // Atualizar cards
+    document.getElementById("fin-total-vendas").textContent=fmt(totalVendas);
+    document.getElementById("fin-total-notas").textContent=fil.length+" nota"+(fil.length!==1?"s":"");
+    document.getElementById("fin-total-sacas").textContent=totalSacas.toLocaleString("pt-BR");
+    document.getElementById("fin-comissao-aberto").textContent=fmt(comAberto);
+    document.getElementById("fin-comissao-aberto-notas").textContent=cntAberto+" em aberto";
+    document.getElementById("fin-comissao-pago").textContent=fmt(comPago);
+    document.getElementById("fin-comissao-pago-notas").textContent=cntPago+" paga"+(cntPago!==1?"s":"");
+    document.getElementById("fin-comissao-total").textContent=fmt(comAberto+comPago);
+    // Lista detalhada
+    if(!fil.length){el.innerHTML="<div class='lista-vazia'><div style='font-size:36px;margin-bottom:8px'>&#x1F4ED;</div>Nenhum registro.</div>";return;}
+    el.innerHTML=fil.map(function(f){
+      var isPago=f.status==="pago";
+      var com=parseFloat(f.comissao_total)||0;
+      var comSaco=parseFloat(f.comissao_saco)||0;
+      return "<div class='lista-item'>"+
+        "<div style='display:flex;justify-content:space-between;align-items:start'>"+
+          "<h3>"+f.cliente+" <span style='font-size:12px;color:#aaa;font-weight:400'>#"+f.num_nota+"</span></h3>"+
+          "<span class='status-badge "+(isPago?"status-pago":"status-aberto")+"'>"+(isPago?"&#x2705; Pago":"&#x23F0; Aberto")+"</span>"+
+        "</div>"+
+        "<div class='meta'>"+
+          "<span>&#x1F6D2; "+fmtData(f.data_venda)+"</span>"+
+          "<span>&#x1F4E6; "+(parseFloat(f.sacas)||0)+" sacas</span>"+
+          (f.vencimento?"<span>&#x1F4C5; "+fmtData(f.vencimento)+"</span>":"")+
+        "</div>"+
+        "<div style='display:flex;justify-content:space-between;margin-top:8px;font-size:13px'>"+
+          "<span style='color:#555'>Venda: <strong>"+fmt(parseFloat(f.total_final)||0)+"</strong></span>"+
+          (com>0?"<span style='color:#1a5c2a'>Comiss&#xe3;o: <strong>"+fmt(com)+"</strong>"+(comSaco>0?" (R$"+comSaco.toFixed(2).replace(".",",")+"/saca)":"")+"</span>":"<span style='color:#aaa'>Sem comiss&#xe3;o</span>")+
+        "</div>"+
+      "</div>";
+    }).join("");
   });
 }
 
