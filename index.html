@@ -84,6 +84,9 @@ input:checked+.slider:before{transform:translateX(20px)}
 .status-pago{background:#e8f5e9;color:#1a5c2a}
 .btn-relatorio{display:block;width:100%;padding:14px;background:#fff;color:#1a5c2a;border:2px solid #1a5c2a;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:16px;text-align:center}
 .lista-vazia{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
+.btn-forma{width:100%;padding:14px;background:#f5faf5;color:#1a5c2a;border:2px solid #1a5c2a;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;text-align:left}
+.btn-forma:active{background:#1a5c2a;color:#fff}
+.forma-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:#e8f5e9;color:#1a5c2a;margin-left:6px;font-weight:600}
 /* Modal anexos */
 .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:400;align-items:center;justify-content:center;padding:20px}
 .modal-bg.show{display:flex}
@@ -140,6 +143,22 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div style="width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite"></div>Carregando...
 </div>
 
+<!-- MODAL PAGAMENTO -->
+<div class="modal-bg" id="modal-pagamento">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModalPag()">&#x2715;</button>
+    <h3>&#x2705; Confirmar Pagamento</h3>
+    <p style="font-size:14px;color:#666;margin:8px 0 16px">Selecione a forma de pagamento:</p>
+    <div id="formas-pag" style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-forma" onclick="confirmarPago('PIX')">&#x1F4F1; PIX</button>
+      <button class="btn-forma" onclick="confirmarPago('Dinheiro')">&#x1F4B5; Dinheiro</button>
+      <button class="btn-forma" onclick="confirmarPago('Cheque')">&#x1F4DD; Cheque</button>
+      <button class="btn-forma" onclick="confirmarPago('TED')">&#x1F3E6; TED</button>
+      <button class="btn-forma" onclick="confirmarPago('Outro')">&#x2022; Outro</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ANEXOS -->
 <div class="modal-bg" id="modal-anexos">
   <div class="modal">
@@ -174,7 +193,13 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="fb">
     <p class="sl">Cliente e entrega</p>
     <div class="card">
-      <div class="field"><label>Nome do cliente</label><input type="text" id="v-cliente" autocomplete="off"/></div>
+      <div class="field">
+        <label>Nome do cliente</label>
+        <div class="ac-wrap">
+          <input type="text" id="v-cliente" autocomplete="off" oninput="acClienteVenda(this.value)" onfocus="acClienteVenda(this.value)"/>
+          <div class="ac-list" id="v-ac"></div>
+        </div>
+      </div>
       <div class="field"><label>Cidade</label><input type="text" id="v-cidade" autocomplete="off"/></div>
       <div class="field"><label>Telefone</label><input type="tel" id="v-tel" placeholder="(00) 00000-0000" autocomplete="off" oninput="mascaraTel(this)"/></div>
       <div class="row2">
@@ -348,6 +373,8 @@ var LOGO = document.getElementById("logo-data").src;
 var htmlAtual = "";
 var diasSel = null;
 var fechamentoAtualId = null;
+var pagandoId = null;
+var pagandoStatus = null;
 
 function supa(path, opts) {
   var options = opts || {};
@@ -422,6 +449,44 @@ function imprimir(){
 function fecharView(){document.getElementById("tela-view").style.display="none";}
 
 // VENDA
+function acClienteVenda(q){
+  var ac=document.getElementById("v-ac");
+  var t=q.toLowerCase().trim();
+  if(!t){ac.classList.remove("show");return;}
+  supa("clientes?nome=ilike.*"+encodeURIComponent(t)+"*&limit=2").then(function(lista){
+    if(!lista||!lista.length){ac.classList.remove("show");return;}
+    ac.innerHTML=lista.map(function(c){
+      return "<div class='ac-item' onclick='preencherClienteVenda("+JSON.stringify(c).replace(/'/g,"&#39;")+")'><div>"+c.nome+"</div><div class='ac-sub'>"+(c.cidade||"")+(c.tel?" &middot; "+c.tel:"")+"</div></div>";
+    }).join("");
+    ac.classList.add("show");
+  });
+}
+function preencherClienteVenda(cli){
+  document.getElementById("v-cliente").value=cli.nome;
+  document.getElementById("v-cidade").value=cli.cidade||"";
+  document.getElementById("v-tel").value=cli.tel||"";
+  document.getElementById("v-motorista").value=cli.motorista||"";
+  document.getElementById("v-placa").value=cli.placa||"";
+  var pares=[["v-qt-esp","v-pr-esp",cli.qt_esp,cli.pr_esp],["v-qt-div","v-pr-div",cli.qt_div,cli.pr_div],
+    ["v-qt-x","v-pr-x",cli.qt_x,cli.pr_x],["v-qt-3x","v-pr-3x",cli.qt_3x,cli.pr_3x],
+    ["v-qt-esc","v-pr-esc",cli.qt_esc,cli.pr_esc]];
+  pares.forEach(function(p){
+    document.getElementById(p[0]).value=p[2]||"";
+    if(p[3]) document.getElementById(p[1]).value=(parseFloat(p[3])||0).toFixed(2).replace(".",",");
+    else document.getElementById(p[1]).value="";
+  });
+  if(cli.tem_frete&&cli.frete_saco){
+    document.getElementById("v-tem-frete").checked=true;
+    document.getElementById("v-frete-campos").classList.remove("oculto");
+    document.getElementById("v-frete-saco").value=(parseFloat(cli.frete_saco)||0).toFixed(2).replace(".",",");
+  } else {
+    document.getElementById("v-tem-frete").checked=false;
+    document.getElementById("v-frete-campos").classList.add("oculto");
+    document.getElementById("v-frete-saco").value="";
+  }
+  document.getElementById("v-ac").classList.remove("show");
+  calcV();
+}
 function toggleFreteV(){document.getElementById("v-frete-campos").classList.toggle("oculto",!document.getElementById("v-tem-frete").checked);calcV();}
 function calcV(){
   var sub=parseDinheiro("v-pr-esp")*n("v-qt-esp")+parseDinheiro("v-pr-div")*n("v-qt-div")+parseDinheiro("v-pr-x")*n("v-qt-x")+parseDinheiro("v-pr-3x")*n("v-qt-3x")+parseDinheiro("v-pr-esc")*n("v-qt-esc");
@@ -521,7 +586,12 @@ function preencherCliente(c){
   document.getElementById("f-ac").classList.remove("show");
   calcF();
 }
-document.addEventListener("click",function(e){if(!e.target.closest(".ac-wrap"))document.getElementById("f-ac").classList.remove("show");});
+document.addEventListener("click",function(e){
+  if(!e.target.closest(".ac-wrap")){
+    document.getElementById("f-ac").classList.remove("show");
+    document.getElementById("v-ac").classList.remove("show");
+  }
+});
 function toggleFreteF(){document.getElementById("f-frete-campos").classList.toggle("oculto",!document.getElementById("f-tem-frete").checked);calcF();}
 function selDia(dias,btn){
   document.querySelectorAll(".btn-dia").forEach(function(b){b.classList.remove("ativo");});
@@ -641,7 +711,7 @@ function renderPagamentos(){
       return "<div class='lista-item'>"+
         "<div style='display:flex;justify-content:space-between;align-items:start'>"+
           "<h3>"+f.cliente+" <span style='font-size:12px;color:#aaa;font-weight:400'>#"+f.num_nota+"</span></h3>"+
-          "<span class='status-badge "+(isPago?"status-pago":"status-aberto")+"'>"+(isPago?"&#x2705; Pago":"&#x23F0; Aberto")+"</span>"+
+          "<span class='status-badge "+(isPago?"status-pago":"status-aberto")+"'>"+(isPago?"&#x2705; Pago"+(f.forma_pagamento?" &middot; "+f.forma_pagamento:""):"&#x23F0; Aberto")+"</span>"+
         "</div>"+
         "<div class='meta'>"+
           "<span>&#x1F6D2; "+fmtData(f.data_venda)+"</span>"+
@@ -660,10 +730,31 @@ function renderPagamentos(){
 }
 
 function togglePago(id, statusAtual){
-  var novoStatus=statusAtual==="pago"?"aberto":"pago";
+  if(statusAtual==="pago"){
+    // Reabrir direto
+    mostrarCarregando(true);
+    supa("fechamentos?id=eq."+id,{method:"PATCH",body:JSON.stringify({status:"aberto",forma_pagamento:null})}).then(function(){
+      mostrarCarregando(false);
+      renderPagamentos();
+    });
+  } else {
+    // Abrir modal de forma de pagamento
+    pagandoId=id;
+    pagandoStatus=statusAtual;
+    document.getElementById("modal-pagamento").classList.add("show");
+  }
+}
+function fecharModalPag(){
+  document.getElementById("modal-pagamento").classList.remove("show");
+  pagandoId=null;
+}
+function confirmarPago(forma){
+  if(!pagandoId) return;
   mostrarCarregando(true);
-  supa("fechamentos?id=eq."+id,{method:"PATCH",body:JSON.stringify({status:novoStatus})}).then(function(){
+  supa("fechamentos?id=eq."+pagandoId,{method:"PATCH",body:JSON.stringify({status:"pago",forma_pagamento:forma})}).then(function(){
     mostrarCarregando(false);
+    document.getElementById("modal-pagamento").classList.remove("show");
+    pagandoId=null;
     renderPagamentos();
   });
 }
