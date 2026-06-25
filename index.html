@@ -239,6 +239,7 @@ input:checked+.slider:before{transform:translateX(20px)}
       <div class="res-row" id="vr-frete-row" style="display:none"><span>Frete total</span><span id="vr-frete">R$ 0,00</span></div>
       <div class="res-row total"><span>Total</span><span id="vr-total">R$ 0,00</span></div>
     </div>
+    <button onclick="limparVenda()" style="display:block;width:100%;padding:12px;background:#fff;color:#888;border:1px solid #ddd;border-radius:14px;font-size:15px;cursor:pointer;margin-top:10px">&#x1F9F9; Limpar campos</button>
     <button class="btn-gerar" onclick="gerarVenda()">Gerar Particular de Venda</button>
   </div>
 </div>
@@ -360,6 +361,7 @@ input:checked+.slider:before{transform:translateX(20px)}
       <div class="res-row red" id="fr-desc-row" style="display:none"><span id="fr-desc-label">(-) Desconto</span><span id="fr-desc">R$ 0,00</span></div>
       <div class="res-row total"><span>Total final</span><span id="fr-total">R$ 0,00</span></div>
     </div>
+    <button onclick="limparFechamento()" style="display:block;width:100%;padding:12px;background:#fff;color:#888;border:1px solid #ddd;border-radius:14px;font-size:15px;cursor:pointer;margin-top:10px">&#x1F9F9; Limpar campos</button>
     <button class="btn-gerar" onclick="gerarFechamento()">Gerar Particular de Fechamento</button>
   </div>
 </div>
@@ -511,10 +513,19 @@ function calcVenc(dias) {
   var d = new Date(); d.setDate(d.getDate()+dias);
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
 }
-function nextNum() {
-  var num = parseInt(localStorage.getItem('gb_num')||'0') + 1;
-  localStorage.setItem('gb_num', num);
-  return String(num).padStart(4,'0');
+function nextNum(callback) {
+  supa('config?chave=eq.ultimo_num').then(function(res) {
+    var atual = parseInt((res && res[0] && res[0].valor) || '0');
+    var novo = atual + 1;
+    supa('config?chave=eq.ultimo_num', {method:'PATCH', body:JSON.stringify({valor:String(novo)})}).then(function() {
+      callback(String(novo).padStart(4,'0'));
+    });
+  }).catch(function() {
+    // fallback local se Supabase falhar
+    var num = parseInt(localStorage.getItem('gb_num')||'0') + 1;
+    localStorage.setItem('gb_num', num);
+    callback(String(num).padStart(4,'0'));
+  });
 }
 function mostrarCarregando(sim) {
   document.getElementById('loading').style.display = sim ? 'flex' : 'none';
@@ -603,7 +614,7 @@ function gerarVenda() {
   var on = document.getElementById('v-tem-frete').checked;
   var freteSaco = on ? parseDinheiro('v-frete-saco') : 0;
   var freteTotal = sacas * freteSaco;
-  var numStr = nextNum();
+  nextNum(function(numStr) {
   localStorage.setItem('gb_numvenda_' + cliente.toLowerCase().trim(), numStr);
   mostrarCarregando(true);
   supa('clientes?nome=eq.' + encodeURIComponent(cliente), {method:'GET'}).then(function(ex) {
@@ -627,6 +638,44 @@ function gerarVenda() {
     var freteBox = (on&&freteTotal>0) ? '<div class="frete-tot-box"><strong>Frete:</strong> '+fmt(freteSaco)+'/saco &nbsp;|&nbsp; <strong>Total frete ('+sacas+' sacas): '+fmt(freteTotal)+'</strong></div>' : '';
     abrirView('<div class="doc"><div class="doc-num">Nota N&#xba; '+numStr+'</div><div class="doc-logo-img">'+logo+'</div><div class="doc-meta"><div class="r2"><div><span>Vendedor: </span><strong>Gustavo Brunetti</strong></div><div><span>Data: </span><strong>'+hoje()+'</strong></div></div><div><span>Cliente: </span><strong>'+cliente+'</strong></div>'+metaTC+metaMot+'</div><table class="doc-table"><thead><tr><th>Produto</th><th class="r">Sacas</th><th class="r">Pre&#xe7;o/Saca</th></tr></thead><tbody>'+li+'</tbody></table>'+freteBox+'</div>');
   }).catch(function(){ mostrarCarregando(false); alert('Erro ao salvar.'); });
+  }); // fecha nextNum
+}
+
+// ── LIMPAR FORMULÁRIOS ──
+function limparVenda() {
+  var campos = ['v-cliente','v-cidade','v-tel','v-motorista','v-placa',
+    'v-frete-saco','v-qt-esp','v-pr-esp','v-qt-div','v-pr-div',
+    'v-qt-x','v-pr-x','v-qt-3x','v-pr-3x','v-qt-esc','v-pr-esc'];
+  campos.forEach(function(id){ document.getElementById(id).value = ''; });
+  document.getElementById('v-tem-frete').checked = false;
+  document.getElementById('v-frete-campos').classList.add('oculto');
+  document.getElementById('vr-sub').textContent = 'R$ 0,00';
+  document.getElementById('vr-frete').textContent = 'R$ 0,00';
+  document.getElementById('vr-frete-row').style.display = 'none';
+  document.getElementById('vr-total').textContent = 'R$ 0,00';
+  document.getElementById('v-ac').classList.remove('show');
+}
+function limparFechamento() {
+  var campos = ['f-cliente','f-cidade','f-tel','f-motorista','f-placa',
+    'f-frete-saco','f-qt-esp','f-pr-esp','f-qt-div','f-pr-div',
+    'f-qt-x','f-pr-x','f-qt-3x','f-pr-3x','f-qt-esc','f-pr-esc',
+    'f-desc-valor','f-desc-nome','f-comissao-saco','f-comissao-pct','f-comissao-manual','f-dias-num'];
+  campos.forEach(function(id){ document.getElementById(id).value = ''; });
+  document.getElementById('f-tem-frete').checked = false;
+  document.getElementById('f-frete-campos').classList.add('oculto');
+  document.getElementById('f-funrural').checked = false;
+  document.getElementById('f-ac').dataset.numVenda = '';
+  document.getElementById('f-ac').dataset.dataVenda = '';
+  document.getElementById('f-ac').classList.remove('show');
+  document.querySelectorAll('.btn-dia').forEach(function(b){ b.classList.remove('ativo'); });
+  diasSel = null;
+  document.getElementById('f-dias-custom').classList.add('oculto');
+  ['fr-sub','fr-frete','fr-funrural','fr-desc','fr-total','fr-comissao'].forEach(function(id){
+    document.getElementById(id).textContent = 'R$ 0,00';
+  });
+  ['fr-frete-row','fr-funrural-row','fr-desc-row'].forEach(function(id){
+    document.getElementById(id).style.display = 'none';
+  });
 }
 
 // ── FECHAMENTO ──
@@ -787,9 +836,9 @@ function gerarFechamento() {
   var comissaoTotal = _comTipo === 'saca' ? sacas*comissaoSaco : _comTipo === 'pct' ? sub*(comissaoPct/100) : parseDinheiro('f-comissao-manual');
   var dias = getDias(), venc = dias ? calcVenc(dias) : null;
   var numVenda = document.getElementById('f-ac').dataset.numVenda || '';
-  var numStr = numVenda || nextNum();
   var dataVenda = document.getElementById('f-ac').dataset.dataVenda || hoje();
   localStorage.removeItem('gb_numvenda_' + cliente.toLowerCase().trim());
+  var _gerarFechComNum = function(numStr) {
   mostrarCarregando(true);
   supa('fechamentos', {method:'POST', body:JSON.stringify({
     num_nota:numStr, cliente:cliente, cidade:cidade, tel:tel, motorista:motorista, placa:placa,
@@ -818,6 +867,12 @@ function gerarFechamento() {
     var vencBox = venc ? '<div class="venc-box">&#x1F4C5; <strong>Vencimento: '+venc+'</strong> &nbsp;('+dias+' dias)</div>' : '';
     abrirView('<div class="doc"><div class="doc-num">Nota N&#xba; '+numStr+'</div><div class="doc-logo-img">'+logo+'</div><div class="doc-title-p">PARTICULAR DE FECHAMENTO</div><div class="doc-meta"><div class="r2"><div><span>Vendedor: </span><strong>Gustavo Brunetti</strong></div><div><span>Data: </span><strong>'+hoje()+'</strong></div></div><div><span>Cliente: </span><strong>'+cliente+'</strong></div>'+metaTC+metaMot+'</div>'+vencBox+'<table class="doc-table"><thead><tr><th>Produto</th><th class="r">Sacas</th><th class="r">P. Unit.</th><th class="r">Total</th></tr></thead><tbody>'+li+'</tbody><tfoot><tr><td colspan="2">Total: '+sacas+' sacas</td><td>Subtotal</td><td class="r">'+fmt(sub)+'</td></tr></tfoot></table><div class="doc-totais">'+descs+'<div class="dt-row dt-final"><span>VALOR FINAL</span><span>'+fmt(totalFinal)+'</span></div></div></div>');
   }).catch(function(){ mostrarCarregando(false); alert('Erro ao salvar.'); });
+  }; // fecha _gerarFechComNum
+  if(numVenda) {
+    _gerarFechComNum(numVenda);
+  } else {
+    nextNum(function(numStr){ _gerarFechComNum(numStr); });
+  }
 }
 
 // ── PAGAMENTO ──
@@ -862,31 +917,44 @@ function renderListaPagamentos() {
   var start = (_pgAtual-1) * PG_SIZE;
   var pagina = _pgDados.slice(start, start+PG_SIZE);
   var el = document.getElementById('lista-fechamentos');
-  if(!pagina.length){ el.innerHTML = '<div class="lista-vazia"><div style="font-size:36px;margin-bottom:8px">&#x1F4ED;</div>Nenhum encontrado.</div>'; renderPaginacao(); return; }
-  el.innerHTML = pagina.map(function(f, pgIdx) {
+  if(!pagina.length) {
+    el.innerHTML = '<div class="lista-vazia"><div style="font-size:36px;margin-bottom:8px">&#x1F4ED;</div>Nenhum encontrado.</div>';
+    renderPaginacao();
+    return;
+  }
+  var html = '';
+  for(var pgIdx=0; pgIdx<pagina.length; pgIdx++) {
+    var f = pagina[pgIdx];
     var idx = start + pgIdx;
     var isPago = f.status === 'pago';
     var comRec = f.comissao_recebida;
-    return '<div class="lista-item">' +
-      '<div style="display:flex;justify-content:space-between;align-items:start">' +
-        '<h3>'+f.cliente+' <span style="font-size:12px;color:#aaa;font-weight:400">#'+f.num_nota+'</span></h3>' +
-        '<span class="status-badge ' + (isPago?'status-pago':'status-aberto') + '">' + (isPago?'&#x2705; Pago'+(f.forma_pagamento?' &middot; '+f.forma_pagamento:''):'&#x23F0; Aberto') + '</span>' +
-      '</div>' +
-      '<div class="meta">' +
-        '<span>&#x1F6D2; '+fmtData(f.data_venda)+'</span>' +
-        (f.vencimento?'<span>&#x1F4C5; Venc: '+fmtData(f.vencimento)+'</span>':'') +
-        '<span>&#x1F4CD; '+f.cidade+'</span>' +
-      '</div>' +
-      '<div class="valor">'+fmt(parseFloat(f.total_final)||0)+'</div>' +
-      '<div class="acoes">' +
-        '<button class="btn-emitir" onclick="gerarPagamento(' + idx + ')"> Emitir &#x2192;</button>' +
-        '<button class="btn-pago' + (isPago?' pago':'') + '" onclick="togglePago(\'' + f.id + '\',\'' + (f.status||'aberto') + '\')">' + (isPago?'&#x21BA; Reabrir':'&#x2705; Marcar pago') + '</button>' +
-        '<button class="btn-pago' + (comRec?' pago':'') + '" onclick="toggleComissao(\'' + f.id + '\',' + (comRec?'true':'false') + ')">' + (comRec?'&#x1F4B0; Com. Recebida':'&#x1F4B0; Receber Com.') + '</button>' +
-        '<button class="btn-anexo" onclick="abrirAnexos(\'' + f.id + '\')">&#x1F4CE; Anexos</button>' +
-        '<button class="btn-excluir" onclick="excluirNota(\'' + f.id + '\',\'' + f.num_nota + '\')">&#x1F5D1; Excluir</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+    html += '<div class="lista-item">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:start">';
+    html += '<h3>' + f.cliente + ' <span style="font-size:12px;color:#aaa;font-weight:400">#' + f.num_nota + '</span></h3>';
+    html += '<span class="status-badge ' + (isPago?'status-pago':'status-aberto') + '">' + (isPago?'&#x2705; Pago' + (f.forma_pagamento?' &middot; '+f.forma_pagamento:''):'&#x23F0; Aberto') + '</span>';
+    html += '</div>';
+    html += '<div class="meta">';
+    html += '<span>&#x1F6D2; ' + fmtData(f.data_venda) + '</span>';
+    if(f.vencimento) html += '<span>&#x1F4C5; Venc: ' + fmtData(f.vencimento) + '</span>';
+    html += '<span>&#x1F4CD; ' + f.cidade + '</span>';
+    html += '</div>';
+    html += '<div class="valor">' + fmt(parseFloat(f.total_final)||0) + '</div>';
+    html += '<div class="acoes">';
+    html += '<button class="btn-emitir" onclick="gerarPagamento(' + idx + ')"> Emitir &#x2192;</button>';
+    var btnPago = '<button class="btn-pago' + (isPago?' pago':'') + '"';
+    btnPago += ' onclick="togglePago(\'' + f.id + '\',\'' + (f.status||'aberto') + '\')">';
+    btnPago += (isPago?'&#x21BA; Reabrir':'&#x2705; Marcar pago') + '</button>';
+    html += btnPago;
+    var btnCom = '<button class="btn-pago' + (comRec?' pago':'') + '"';
+    btnCom += ' onclick="toggleComissao(\'' + f.id + '\',' + (comRec?'true':'false') + ')">';
+    btnCom += (comRec?'&#x1F4B0; Com. Recebida':'&#x1F4B0; Receber Com.') + '</button>';
+    html += btnCom;
+    html += '<button class="btn-anexo" onclick="abrirAnexos(\'' + f.id + '\')">&#x1F4CE; Anexos</button>';
+    html += '<button class="btn-excluir" onclick="excluirNota(\'' + f.id + '\',\'' + f.num_nota + '\')">&#x1F5D1; Excluir</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
   renderPaginacao();
 }
 function renderPagamentos() { buscarPagamentos(); }
