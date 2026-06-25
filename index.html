@@ -102,7 +102,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 .doc{background:#fff;border-radius:12px;padding:20px;color:#000;font-family:Arial,sans-serif}
 .doc-logo-img{text-align:center;border-bottom:2px solid #1a5c2a;padding-bottom:12px;margin-bottom:14px}
 .doc-logo-img img{height:72px;object-fit:contain}
-.doc-num{text-align:right;font-size:11px;color:#aaa;margin-bottom:4px}
+.doc-num{text-align:right;font-size:16px;font-weight:700;color:#1a5c2a;margin-bottom:4px}
 .doc-meta{font-size:12px;line-height:1.9;margin-bottom:12px}
 .doc-meta .r2{display:flex;gap:16px;flex-wrap:wrap}
 .doc-meta span{color:#777}
@@ -1204,14 +1204,14 @@ function gerarPagamento(idxOrObj) {
   var sub = parseFloat(f.subtotal)||0;
   var funr = sub * 0.015;
   var li = '';
-  if(f.qt_esp>0) li += '<tr><td>Batata Especial</td><td class="r">'+f.qt_esp+' sc/'+(f.qt_esp*25)+' kg</td><td class="r">'+fmt(parseFloat(f.pr_esp))+'</td><td class="r">'+fmt(f.qt_esp*parseFloat(f.pr_esp))+'</td></tr>';
-  if(f.qt_div>0) li += '<tr><td>Batata Diversa</td><td class="r">'+f.qt_div+' sc/'+(f.qt_div*25)+' kg</td><td class="r">'+fmt(parseFloat(f.pr_div))+'</td><td class="r">'+fmt(f.qt_div*parseFloat(f.pr_div))+'</td></tr>';
-  if(f.qt_x>0) li += '<tr><td>Batata X</td><td class="r">'+f.qt_x+' sc/'+(f.qt_x*25)+' kg</td><td class="r">'+fmt(parseFloat(f.pr_x))+'</td><td class="r">'+fmt(f.qt_x*parseFloat(f.pr_x))+'</td></tr>';
-  if(f.qt_3x>0) li += '<tr><td>Batata 3&#xaa; X</td><td class="r">'+f.qt_3x+' sc/'+(f.qt_3x*25)+' kg</td><td class="r">'+fmt(parseFloat(f.pr_3x))+'</td><td class="r">'+fmt(f.qt_3x*parseFloat(f.pr_3x))+'</td></tr>';
-  if(f.qt_esc>0) li += '<tr><td>Batata Escovada</td><td class="r">'+f.qt_esc+' sc/'+(f.qt_esc*25)+' kg</td><td class="r">'+fmt(parseFloat(f.pr_esc))+'</td><td class="r">'+fmt(f.qt_esc*parseFloat(f.pr_esc))+'</td></tr>';
+  if(f.qt_esp>0) li += '<tr><td>Batata Especial</td><td class="r">'+f.qt_esp+' sc</td><td class="r">'+fmt(parseFloat(f.pr_esp))+'</td><td class="r">'+fmt(f.qt_esp*parseFloat(f.pr_esp))+'</td></tr>';
+  if(f.qt_div>0) li += '<tr><td>Batata Diversa</td><td class="r">'+f.qt_div+' sc</td><td class="r">'+fmt(parseFloat(f.pr_div))+'</td><td class="r">'+fmt(f.qt_div*parseFloat(f.pr_div))+'</td></tr>';
+  if(f.qt_x>0) li += '<tr><td>Batata X</td><td class="r">'+f.qt_x+' sc</td><td class="r">'+fmt(parseFloat(f.pr_x))+'</td><td class="r">'+fmt(f.qt_x*parseFloat(f.pr_x))+'</td></tr>';
+  if(f.qt_3x>0) li += '<tr><td>Batata 3&#xaa; X</td><td class="r">'+f.qt_3x+' sc</td><td class="r">'+fmt(parseFloat(f.pr_3x))+'</td><td class="r">'+fmt(f.qt_3x*parseFloat(f.pr_3x))+'</td></tr>';
+  if(f.qt_esc>0) li += '<tr><td>Batata Escovada</td><td class="r">'+f.qt_esc+' sc</td><td class="r">'+fmt(parseFloat(f.pr_esc))+'</td><td class="r">'+fmt(f.qt_esc*parseFloat(f.pr_esc))+'</td></tr>';
   var logo = '<img src="' + LOGO + '" style="height:72px;object-fit:contain"/>';
   var vencBox = f.vencimento ? '<div class="venc-box">&#x1F4C5; <strong>Vencimento: '+fmtData(f.vencimento)+'</strong>'+(f.dias?' &nbsp;('+f.dias+' dias)':'')+'</div>' : '';
-  abrirView('<div class="doc"><div class="doc-logo-img">'+logo+'</div><div class="doc-title-p">DOCUMENTO DE PAGAMENTO</div><div class="doc-meta"><div><span>Cliente: </span><strong>'+f.cliente+'</strong></div><div><span>Cidade: </span><strong>'+f.cidade+'</strong></div>'+(f.tel?'<div><span>Tel: </span><strong>'+f.tel+'</strong></div>':'')+'<div><span>Data da venda: </span><strong>'+fmtData(f.data_venda)+'</strong></div></div>'+vencBox+'<table class="doc-table"><thead><tr><th>Produto</th><th class="r">Quantidade</th><th class="r">P. Unit.</th><th class="r">Total</th></tr></thead><tbody>'+li+'</tbody></table><div class="doc-totais"><div class="dt-row"><span>Subtotal</span><span>'+fmt(sub)+'</span></div><div class="dt-row dt-desc"><span>(-) Funrural (1,5%%)</span><span>- '+fmt(funr)+'</span></div><div class="dt-row dt-final"><span>TOTAL FINAL</span><span>'+fmt(sub-funr)+'</span></div></div></div>');
+  abrirView('<div class="doc"><div class="doc-num">Nota N&#xba; '+f.num_nota+'</div><div class="doc-logo-img">'+logo+'</div><div class="doc-title-p">DOCUMENTO DE PAGAMENTO</div><div class="doc-meta"><div><span>Cliente: </span><strong>'+f.cliente+'</strong></div><div><span>Cidade: </span><strong>'+f.cidade+'</strong></div>'+(f.tel?'<div><span>Tel: </span><strong>'+f.tel+'</strong></div>':'')+'<div><span>Data da venda: </span><strong>'+fmtData(f.data_venda)+'</strong></div></div>'+vencBox+'<table class="doc-table"><thead><tr><th>Produto</th><th class="r">Quantidade</th><th class="r">P. Unit.</th><th class="r">Total</th></tr></thead><tbody>'+li+'</tbody></table><div class="doc-totais"><div class="dt-row"><span>Subtotal</span><span>'+fmt(sub)+'</span></div><div class="dt-row dt-desc"><span>(-) Funrural (1,5%%)</span><span>- '+fmt(funr)+'</span></div><div class="dt-row dt-final"><span>TOTAL FINAL</span><span>'+fmt(sub-funr)+'</span></div></div></div>');
 }
 
 </script>
