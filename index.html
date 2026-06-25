@@ -651,13 +651,15 @@ function abrirPendentes() {
   if(!_pendentes.length) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Nenhuma venda pendente.</div>';
   } else {
-    el.innerHTML = _pendentes.map(function(cl) {
-      return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:15px">'+cl.nome+'</div><div style="font-size:12px;color:#888;margin-top:2px">'+(cl.cidade||'')+(cl.tel?' &middot; '+cl.tel:'') + ' &middot; ' + fmtData(cl.data_venda)+'</div></div><div style="display:flex;gap:6px"><button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="usarClientePendente(' + JSON.stringify(cl).replace(/'/g,"&#39;") + ')">Fechar</button><button class="btn-sm" style="background:#fff0f0;color:#c0392b;border:1px solid #c0392b" onclick="excluirVendaPendente(\'' + cl.id + '\')">&#x1F5D1;</button></div></div></div>';
+    el.innerHTML = _pendentes.map(function(cl, idx) {
+      return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:15px">' + cl.nome + '</div><div style="font-size:12px;color:#888;margin-top:2px">' + (cl.cidade||'') + (cl.tel?' &middot; '+cl.tel:'') + ' &middot; ' + fmtData(cl.data_venda) + '</div></div><div style="display:flex;gap:6px"><button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="usarClientePendente(' + idx + ')">Fechar</button><button class="btn-sm" style="background:#fff0f0;color:#c0392b;border:1px solid #c0392b" onclick="excluirVendaPendente(\'' + cl.id + '\')">&#x1F5D1;</button></div></div></div>';
     }).join('');
   }
   document.getElementById('modal-pendentes').classList.add('show');
 }
-function usarClientePendente(cl) {
+function usarClientePendente(idx) {
+  var cl = _pendentes[idx];
+  if(!cl) return;
   document.getElementById('modal-pendentes').classList.remove('show');
   preencherCliente(cl);
   window.scrollTo(0, 300);
@@ -861,7 +863,8 @@ function renderListaPagamentos() {
   var pagina = _pgDados.slice(start, start+PG_SIZE);
   var el = document.getElementById('lista-fechamentos');
   if(!pagina.length){ el.innerHTML = '<div class="lista-vazia"><div style="font-size:36px;margin-bottom:8px">&#x1F4ED;</div>Nenhum encontrado.</div>'; renderPaginacao(); return; }
-  el.innerHTML = pagina.map(function(f) {
+  el.innerHTML = pagina.map(function(f, pgIdx) {
+    var idx = start + pgIdx;
     var isPago = f.status === 'pago';
     var comRec = f.comissao_recebida;
     return '<div class="lista-item">' +
@@ -876,7 +879,7 @@ function renderListaPagamentos() {
       '</div>' +
       '<div class="valor">'+fmt(parseFloat(f.total_final)||0)+'</div>' +
       '<div class="acoes">' +
-        '<button class="btn-emitir" onclick="gerarPagamento(' + JSON.stringify(f).replace(/'/g,"&#39;") + ')"> Emitir &#x2192;</button>' +
+        '<button class="btn-emitir" onclick="gerarPagamento(' + idx + ')"> Emitir &#x2192;</button>' +
         '<button class="btn-pago' + (isPago?' pago':'') + '" onclick="togglePago(\'' + f.id + '\',\'' + (f.status||'aberto') + '\')">' + (isPago?'&#x21BA; Reabrir':'&#x2705; Marcar pago') + '</button>' +
         '<button class="btn-pago' + (comRec?' pago':'') + '" onclick="toggleComissao(\'' + f.id + '\',' + (comRec?'true':'false') + ')">' + (comRec?'&#x1F4B0; Com. Recebida':'&#x1F4B0; Receber Com.') + '</button>' +
         '<button class="btn-anexo" onclick="abrirAnexos(\'' + f.id + '\')">&#x1F4CE; Anexos</button>' +
@@ -1127,7 +1130,9 @@ function gerarRelatorio() {
 }
 
 // ── DOCUMENTO DE PAGAMENTO ──
-function gerarPagamento(f) {
+function gerarPagamento(idxOrObj) {
+  var f = typeof idxOrObj === 'number' ? _pgDados[idxOrObj] : idxOrObj;
+  if(!f) return;
   var sub = parseFloat(f.subtotal)||0;
   var funr = sub * 0.015;
   var li = '';
