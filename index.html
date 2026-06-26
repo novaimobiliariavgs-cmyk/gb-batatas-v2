@@ -561,7 +561,7 @@ function acClienteVenda(q) {
   supa('clientes?nome=ilike.*' + encodeURIComponent(t) + '*&limit=2').then(function(lista) {
     if(!lista||!lista.length){ ac.classList.remove('show'); return; }
     ac.innerHTML = lista.map(function(c) {
-      return '<div class="ac-item" onclick="preencherClienteVenda(' + JSON.stringify(c).replace(/'/g,"&#39;") + ')"><div>' + c.nome + '</div><div class="ac-sub">' + (c.cidade||'') + (c.tel ? ' &middot; ' + c.tel : '') + '</div></div>';
+      return '<div class="ac-item" onclick="preencherClienteVenda(' + JSON.stringify(c).replace(/'/g,"&#39;").replace(/"/g,'&quot;') + ')"><div>' + c.nome + '</div><div class="ac-sub">' + (c.cidade||'') + (c.tel ? ' &middot; ' + c.tel : '') + '</div></div>';
     }).join('');
     ac.classList.add('show');
   });
@@ -685,10 +685,10 @@ function carregarPendentes() {
       document.getElementById('pendentes-count').textContent = 'Nenhuma venda em aberto';
       return;
     }
-    supa('fechamentos?select=cliente').then(function(fechados) {
+    supa('fechamentos?select=num_nota').then(function(fechados) {
       var cf = {};
-      (fechados||[]).forEach(function(f){ cf[String(f.cliente).toLowerCase().trim()] = true; });
-      _pendentes = clientes.filter(function(cl){ return !cf[String(cl.nome).toLowerCase().trim()]; });
+      (fechados||[]).forEach(function(f){ if(f.num_nota) cf[String(f.num_nota).trim()] = true; });
+      _pendentes = clientes.filter(function(cl){ return cl.num_venda && !cf[String(cl.num_venda).trim()]; });
       var cnt = _pendentes.length;
       document.getElementById('pendentes-count').textContent = cnt > 0 ? cnt + ' venda' + (cnt>1?'s':'') + ' aguardando fechamento' : 'Nenhuma venda pendente';
       document.getElementById('box-pendentes').style.borderLeftColor = cnt > 0 ? '#f9a825' : '#1a5c2a';
@@ -729,7 +729,7 @@ function acCliente(q) {
   supa('clientes?nome=ilike.*' + encodeURIComponent(t) + '*&limit=2').then(function(lista) {
     if(!lista||!lista.length){ ac.classList.remove('show'); return; }
     ac.innerHTML = lista.map(function(c) {
-      return '<div class="ac-item" onclick="preencherCliente(' + JSON.stringify(c).replace(/'/g,"&#39;") + ')"><div>' + c.nome + '</div><div class="ac-sub">' + (c.cidade||'') + (c.tel ? ' &middot; ' + c.tel : '') + '</div></div>';
+      return '<div class="ac-item" onclick="preencherCliente(' + JSON.stringify(c).replace(/'/g,"&#39;").replace(/"/g,'&quot;') + ')"><div>' + c.nome + '</div><div class="ac-sub">' + (c.cidade||'') + (c.tel ? ' &middot; ' + c.tel : '') + '</div></div>';
     }).join('');
     ac.classList.add('show');
   });
