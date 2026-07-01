@@ -404,7 +404,8 @@ input:checked+.slider:before{transform:translateX(20px)}
       <span style="font-size:12px;color:#888;align-self:center;white-space:nowrap">at&#xe9;</span>
       <input type="date" id="fin-data-ate" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none"/>
     </div>
-    <button onclick="renderFinanceiro()" style="width:100%;padding:10px;background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px">&#x21BB; Atualizar</button>
+    <button onclick="renderFinanceiro()" style="width:100%;padding:10px;background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px">&#x21BB; Atualizar</button>
+    <button onclick="exportarBackupCSV()" style="width:100%;padding:10px;background:#1a5c2a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px">&#x2B07; Exportar Backup CSV</button>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:14px">
         <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Vendas</div>
@@ -479,6 +480,28 @@ function supa(path, opts) {
   return fetch(SUPA_URL + '/rest/v1/' + path, o).then(function(r){ return r.json(); });
 }
 
+function arrToCSV(rows) {
+  if (!rows.length) return '';
+  var cols = Object.keys(rows[0]);
+  var esc = function(v){ v = v===null||v===undefined ? '' : String(v); return '"' + v.replace(/"/g,'""') + '"'; };
+  var lines = [cols.map(esc).join(',')];
+  rows.forEach(function(r){ lines.push(cols.map(function(c){ return esc(r[c]); }).join(',')); });
+  return '﻿' + lines.join('\r\n');
+}
+function baixarCSV(nome, csv) {
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nome;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function exportarBackupCSV() {
+  Promise.all([supa('fechamentos?select=*'), supa('clientes?select=*')]).then(function(res){
+    var data = new Date().toISOString().slice(0,10);
+    baixarCSV('fechamentos_' + data + '.csv', arrToCSV(res[0]));
+    baixarCSV('clientes_' + data + '.csv', arrToCSV(res[1]));
+  }).catch(function(e){ alert('Erro ao exportar backup: ' + e.message); });
+}
 var fmt = function(v){ return 'R$ ' + (parseFloat(v)||0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
 var n = function(id){ return parseFloat(document.getElementById(id).value)||0; };
 var vv = function(id){ return document.getElementById(id).value.trim(); };
