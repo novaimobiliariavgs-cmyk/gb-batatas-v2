@@ -249,6 +249,10 @@ input:checked+.slider:before{transform:translateX(20px)}
           <tr><td class="nome">X</td><td><input type="number" id="v-qt-x" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-x" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
           <tr><td class="nome">3&#xaa; X</td><td><input type="number" id="v-qt-3x" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-3x" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
           <tr><td class="nome">Escovada</td><td><input type="number" id="v-qt-esc" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-esc" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
+          <tr><td class="nome">Cebola cx 1</td><td><input type="number" id="v-qt-ceb1" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-ceb1" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
+          <tr><td class="nome">Cebola cx 2</td><td><input type="number" id="v-qt-ceb2" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-ceb2" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
+          <tr><td class="nome">Cebola cx 3</td><td><input type="number" id="v-qt-ceb3" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-ceb3" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
+          <tr><td class="nome">Cebola cx 4</td><td><input type="number" id="v-qt-ceb4" placeholder="0" min="0" inputmode="numeric" oninput="calcV()"/></td><td><input type="text" id="v-pr-ceb4" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcV()"/></td></tr>
         </tbody>
       </table>
     </div>
@@ -631,7 +635,9 @@ function preencherClienteVenda(cl) {
   document.getElementById('v-placa').value = cl.placa||'';
   var pares = [['v-qt-esp','v-pr-esp',cl.qt_esp,cl.pr_esp],['v-qt-div','v-pr-div',cl.qt_div,cl.pr_div],
     ['v-qt-x','v-pr-x',cl.qt_x,cl.pr_x],['v-qt-3x','v-pr-3x',cl.qt_3x,cl.pr_3x],
-    ['v-qt-esc','v-pr-esc',cl.qt_esc,cl.pr_esc]];
+    ['v-qt-esc','v-pr-esc',cl.qt_esc,cl.pr_esc],
+    ['v-qt-ceb1','v-pr-ceb1',cl.qt_ceb1,cl.pr_ceb1],['v-qt-ceb2','v-pr-ceb2',cl.qt_ceb2,cl.pr_ceb2],
+    ['v-qt-ceb3','v-pr-ceb3',cl.qt_ceb3,cl.pr_ceb3],['v-qt-ceb4','v-pr-ceb4',cl.qt_ceb4,cl.pr_ceb4]];
   pares.forEach(function(p) {
     document.getElementById(p[0]).value = p[2]||'';
     document.getElementById(p[1]).value = p[3] ? (parseFloat(p[3])||0).toFixed(2).replace('.',',') : '';
@@ -649,8 +655,10 @@ function toggleFreteV() {
   calcV();
 }
 function calcV() {
-  var sub = parseDinheiro('v-pr-esp')*n('v-qt-esp') + parseDinheiro('v-pr-div')*n('v-qt-div') + parseDinheiro('v-pr-x')*n('v-qt-x') + parseDinheiro('v-pr-3x')*n('v-qt-3x') + parseDinheiro('v-pr-esc')*n('v-qt-esc');
-  var sacas = n('v-qt-esp') + n('v-qt-div') + n('v-qt-x') + n('v-qt-3x') + n('v-qt-esc');
+  var sub = parseDinheiro('v-pr-esp')*n('v-qt-esp') + parseDinheiro('v-pr-div')*n('v-qt-div') + parseDinheiro('v-pr-x')*n('v-qt-x') + parseDinheiro('v-pr-3x')*n('v-qt-3x') + parseDinheiro('v-pr-esc')*n('v-qt-esc')
+    + parseDinheiro('v-pr-ceb1')*n('v-qt-ceb1') + parseDinheiro('v-pr-ceb2')*n('v-qt-ceb2') + parseDinheiro('v-pr-ceb3')*n('v-qt-ceb3') + parseDinheiro('v-pr-ceb4')*n('v-qt-ceb4');
+  var sacas = n('v-qt-esp') + n('v-qt-div') + n('v-qt-x') + n('v-qt-3x') + n('v-qt-esc')
+    + n('v-qt-ceb1') + n('v-qt-ceb2') + n('v-qt-ceb3') + n('v-qt-ceb4');
   var on = document.getElementById('v-tem-frete').checked;
   var fr = on ? sacas * parseDinheiro('v-frete-saco') : 0;
   document.getElementById('vr-sub').textContent = fmt(sub);
@@ -667,7 +675,11 @@ function gerarVenda() {
   var qt_x=n('v-qt-x'), pr_x=parseDinheiro('v-pr-x');
   var qt_3x=n('v-qt-3x'), pr_3x=parseDinheiro('v-pr-3x');
   var qt_esc=n('v-qt-esc'), pr_esc=parseDinheiro('v-pr-esc');
-  var sacas = qt_esp+qt_div+qt_x+qt_3x+qt_esc;
+  var qt_ceb1=n('v-qt-ceb1'), pr_ceb1=parseDinheiro('v-pr-ceb1');
+  var qt_ceb2=n('v-qt-ceb2'), pr_ceb2=parseDinheiro('v-pr-ceb2');
+  var qt_ceb3=n('v-qt-ceb3'), pr_ceb3=parseDinheiro('v-pr-ceb3');
+  var qt_ceb4=n('v-qt-ceb4'), pr_ceb4=parseDinheiro('v-pr-ceb4');
+  var sacas = qt_esp+qt_div+qt_x+qt_3x+qt_esc+qt_ceb1+qt_ceb2+qt_ceb3+qt_ceb4;
   var on = document.getElementById('v-tem-frete').checked;
   var freteSaco = on ? parseDinheiro('v-frete-saco') : 0;
   var freteTotal = sacas * freteSaco;
@@ -678,6 +690,8 @@ function gerarVenda() {
     var dados = {nome:cliente,cidade:cidade,tel:tel,motorista:motorista,placa:placa,
       qt_esp:qt_esp,pr_esp:pr_esp,qt_div:qt_div,pr_div:pr_div,qt_x:qt_x,pr_x:pr_x,
       qt_3x:qt_3x,pr_3x:pr_3x,qt_esc:qt_esc,pr_esc:pr_esc,
+      qt_ceb1:qt_ceb1,pr_ceb1:pr_ceb1,qt_ceb2:qt_ceb2,pr_ceb2:pr_ceb2,
+      qt_ceb3:qt_ceb3,pr_ceb3:pr_ceb3,qt_ceb4:qt_ceb4,pr_ceb4:pr_ceb4,
       frete_saco:freteSaco,tem_frete:on,data_venda:hoje(),num_venda:numStr};
     var p = (ex&&ex.length>0) ? supa('clientes?id=eq.'+ex[0].id, {method:'PATCH', body:JSON.stringify(dados)}) : supa('clientes', {method:'POST', body:JSON.stringify(dados)});
     return p;
@@ -689,6 +703,10 @@ function gerarVenda() {
     if(qt_x>0) li += '<tr><td>X</td><td class="r">'+qt_x+'</td><td class="r">'+fmt(pr_x+freteSaco)+'</td></tr>';
     if(qt_3x>0) li += '<tr><td>3&#xaa; X</td><td class="r">'+qt_3x+'</td><td class="r">'+fmt(pr_3x+freteSaco)+'</td></tr>';
     if(qt_esc>0) li += '<tr><td>ESCOVADA</td><td class="r">'+qt_esc+'</td><td class="r">'+fmt(pr_esc+freteSaco)+'</td></tr>';
+    if(qt_ceb1>0) li += '<tr><td>CEBOLA CX 1</td><td class="r">'+qt_ceb1+'</td><td class="r">'+fmt(pr_ceb1+freteSaco)+'</td></tr>';
+    if(qt_ceb2>0) li += '<tr><td>CEBOLA CX 2</td><td class="r">'+qt_ceb2+'</td><td class="r">'+fmt(pr_ceb2+freteSaco)+'</td></tr>';
+    if(qt_ceb3>0) li += '<tr><td>CEBOLA CX 3</td><td class="r">'+qt_ceb3+'</td><td class="r">'+fmt(pr_ceb3+freteSaco)+'</td></tr>';
+    if(qt_ceb4>0) li += '<tr><td>CEBOLA CX 4</td><td class="r">'+qt_ceb4+'</td><td class="r">'+fmt(pr_ceb4+freteSaco)+'</td></tr>';
     var logo = '<img src="' + LOGO + '" style="height:72px;object-fit:contain"/>';
     var metaMot = motorista ? '<div><span>Motorista: </span><strong>'+motorista+'</strong>' + (placa ? '&nbsp;&nbsp;<span>Placa: </span><strong>'+placa+'</strong>' : '') + '</div>' : '';
     var metaTC = tel ? '<div><span>Tel: </span><strong>'+tel+'</strong>&nbsp;&nbsp;<span>Cidade: </span><strong>'+cidade+'</strong></div>' : '<div><span>Cidade: </span><strong>'+cidade+'</strong></div>';
@@ -702,7 +720,8 @@ function gerarVenda() {
 function limparVenda() {
   var campos = ['v-cliente','v-cidade','v-tel','v-motorista','v-placa',
     'v-frete-saco','v-qt-esp','v-pr-esp','v-qt-div','v-pr-div',
-    'v-qt-x','v-pr-x','v-qt-3x','v-pr-3x','v-qt-esc','v-pr-esc'];
+    'v-qt-x','v-pr-x','v-qt-3x','v-pr-3x','v-qt-esc','v-pr-esc',
+    'v-qt-ceb1','v-pr-ceb1','v-qt-ceb2','v-pr-ceb2','v-qt-ceb3','v-pr-ceb3','v-qt-ceb4','v-pr-ceb4'];
   campos.forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('v-tem-frete').checked = false;
   document.getElementById('v-frete-campos').classList.add('oculto');
@@ -801,7 +820,9 @@ function preencherCliente(c) {
   document.getElementById('f-placa').value = c.placa||'';
   var pares = [['f-qt-esp','f-pr-esp',c.qt_esp,c.pr_esp],['f-qt-div','f-pr-div',c.qt_div,c.pr_div],
     ['f-qt-x','f-pr-x',c.qt_x,c.pr_x],['f-qt-3x','f-pr-3x',c.qt_3x,c.pr_3x],
-    ['f-qt-esc','f-pr-esc',c.qt_esc,c.pr_esc]];
+    ['f-qt-esc','f-pr-esc',c.qt_esc,c.pr_esc],
+    ['f-qt-ceb1','f-pr-ceb1',c.qt_ceb1,c.pr_ceb1],['f-qt-ceb2','f-pr-ceb2',c.qt_ceb2,c.pr_ceb2],
+    ['f-qt-ceb3','f-pr-ceb3',c.qt_ceb3,c.pr_ceb3],['f-qt-ceb4','f-pr-ceb4',c.qt_ceb4,c.pr_ceb4]];
   pares.forEach(function(p) {
     document.getElementById(p[0]).value = p[2]||'';
     document.getElementById(p[1]).value = p[3] ? (parseFloat(p[3])||0).toFixed(2).replace('.',',') : '';
