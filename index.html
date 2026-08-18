@@ -153,6 +153,25 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
+<!-- MODAL VENDAS EM ABERTO -->
+<div class="modal-bg" id="modal-vendas-aberto">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-vendas-aberto').classList.remove('show')">&#x2715;</button>
+    <h3 id="modal-vendas-aberto-titulo">Vendas em Aberto</h3>
+    <div id="modal-vendas-aberto-lista" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR NOTA -->
+<div class="modal-bg" id="modal-editar">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-editar').classList.remove('show')">&#x2715;</button>
+    <h3>&#x270F;&#xFE0F; Editar Nota</h3>
+    <div id="edit-lista" style="margin-top:12px;max-height:60vh;overflow-y:auto"></div>
+    <button class="btn-gerar" style="margin-top:14px" onclick="salvarEdicaoNota()">Salvar altera&#xe7;&#xf5;es</button>
+  </div>
+</div>
+
 <!-- MODAL PENDENTES -->
 <div class="modal-bg" id="modal-pendentes">
   <div class="modal">
@@ -295,14 +314,22 @@ input:checked+.slider:before{transform:translateX(20px)}
           <tr><td class="nome">X</td><td><input type="number" id="f-qt-x" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-x" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
           <tr><td class="nome">3&#xaa; X</td><td><input type="number" id="f-qt-3x" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-3x" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
           <tr><td class="nome">Escovada</td><td><input type="number" id="f-qt-esc" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-esc" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
+          <tr><td class="nome">Cebola cx 1</td><td><input type="number" id="f-qt-ceb1" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-ceb1" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
+          <tr><td class="nome">Cebola cx 2</td><td><input type="number" id="f-qt-ceb2" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-ceb2" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
+          <tr><td class="nome">Cebola cx 3</td><td><input type="number" id="f-qt-ceb3" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-ceb3" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
+          <tr><td class="nome">Cebola cx 4</td><td><input type="number" id="f-qt-ceb4" placeholder="0" min="0" inputmode="numeric" oninput="calcF()"/></td><td><input type="text" id="f-pr-ceb4" placeholder="0,00" inputmode="decimal" oninput="mascaraDinheiro(this);calcF()"/></td></tr>
         </tbody>
       </table>
     </div>
     <p class="sl">Descontos</p>
     <div class="card">
-      <div class="tog-row" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f0f0f0">
-        <div><div class="tog-label">Funrural</div><div class="tog-sub">1,63% sobre o subtotal</div></div>
+      <div class="tog-row" style="margin-bottom:10px">
+        <div><div class="tog-label">Funrural</div><div class="tog-sub">% sobre o subtotal</div></div>
         <label class="switch"><input type="checkbox" id="f-funrural" onchange="calcF()"/><span class="slider"></span></label>
+      </div>
+      <div class="field" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f0f0f0">
+        <label>Percentual do Funrural (%)</label>
+        <input type="text" id="f-funrural-pct" placeholder="1,63" inputmode="decimal" value="1,63" oninput="mascaraDinheiro(this);calcF()"/>
       </div>
       <div class="field" style="margin-bottom:10px">
         <label>Valor desconto extra (R$)</label>
@@ -357,7 +384,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <div class="card">
       <div class="res-row"><span>Subtotal</span><span id="fr-sub">R$ 0,00</span></div>
       <div class="res-row red" id="fr-frete-row" style="display:none"><span>(-) Frete</span><span id="fr-frete">R$ 0,00</span></div>
-      <div class="res-row red" id="fr-funrural-row" style="display:none"><span>(-) Funrural 1,63%</span><span id="fr-funrural">R$ 0,00</span></div>
+      <div class="res-row red" id="fr-funrural-row" style="display:none"><span id="fr-funrural-label">(-) Funrural</span><span id="fr-funrural">R$ 0,00</span></div>
       <div class="res-row red" id="fr-desc-row" style="display:none"><span id="fr-desc-label">(-) Desconto</span><span id="fr-desc">R$ 0,00</span></div>
       <div class="res-row total"><span>Total final</span><span id="fr-total">R$ 0,00</span></div>
     </div>
@@ -417,6 +444,12 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div id="fin-total-sacas" style="font-size:20px;font-weight:800;color:#1a5c2a">0</div>
         <div style="font-size:12px;color:#aaa;margin-top:4px">sacas vendidas</div>
       </div>
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #c0392b;cursor:pointer;grid-column:1 / -1" onclick="abrirDetalheVendasAberto()">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vendas em Aberto (a Receber)</div>
+        <div id="fin-vendas-aberto" style="font-size:20px;font-weight:800;color:#c0392b">R$ 0,00</div>
+        <div id="fin-vendas-aberto-qt" style="font-size:12px;color:#aaa;margin-top:4px">0 em aberto</div>
+        <div style="font-size:11px;color:#c0392b;margin-top:4px">ver detalhes &#x2192;</div>
+      </div>
       <div class="card" style="text-align:center;padding:14px;border-left:3px solid #f9a825;cursor:pointer" onclick="abrirDetalheComissao('aberto')">
         <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Comiss&#xe3;o a Receber</div>
         <div id="fin-comissao-aberto" style="font-size:20px;font-weight:800;color:#e65100">R$ 0,00</div>
@@ -461,6 +494,7 @@ var htmlAtual = '';
 var diasSel = null;
 var fechamentoAtualId = null;
 var pagandoId = null;
+var _editandoId = null;
 var _comTipo = 'saca';
 var _pgAtual = 1;
 var _pgDados = [];
@@ -682,11 +716,13 @@ function limparFechamento() {
   var campos = ['f-cliente','f-cidade','f-tel','f-motorista','f-placa',
     'f-frete-saco','f-qt-esp','f-pr-esp','f-qt-div','f-pr-div',
     'f-qt-x','f-pr-x','f-qt-3x','f-pr-3x','f-qt-esc','f-pr-esc',
+    'f-qt-ceb1','f-pr-ceb1','f-qt-ceb2','f-pr-ceb2','f-qt-ceb3','f-pr-ceb3','f-qt-ceb4','f-pr-ceb4',
     'f-desc-valor','f-desc-nome','f-comissao-saco','f-comissao-pct','f-comissao-manual','f-dias-num'];
   campos.forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('f-tem-frete').checked = false;
   document.getElementById('f-frete-campos').classList.add('oculto');
   document.getElementById('f-funrural').checked = false;
+  document.getElementById('f-funrural-pct').value = '1,63';
   document.getElementById('f-ac').dataset.numVenda = '';
   document.getElementById('f-ac').dataset.dataVenda = '';
   document.getElementById('f-ac').classList.remove('show');
@@ -817,17 +853,22 @@ function getDias() {
   return diasSel;
 }
 function calcF() {
-  var sub = parseDinheiro('f-pr-esp')*n('f-qt-esp') + parseDinheiro('f-pr-div')*n('f-qt-div') + parseDinheiro('f-pr-x')*n('f-qt-x') + parseDinheiro('f-pr-3x')*n('f-qt-3x') + parseDinheiro('f-pr-esc')*n('f-qt-esc');
-  var sacas = n('f-qt-esp') + n('f-qt-div') + n('f-qt-x') + n('f-qt-3x') + n('f-qt-esc');
+  var sub = parseDinheiro('f-pr-esp')*n('f-qt-esp') + parseDinheiro('f-pr-div')*n('f-qt-div') + parseDinheiro('f-pr-x')*n('f-qt-x') + parseDinheiro('f-pr-3x')*n('f-qt-3x') + parseDinheiro('f-pr-esc')*n('f-qt-esc')
+    + parseDinheiro('f-pr-ceb1')*n('f-qt-ceb1') + parseDinheiro('f-pr-ceb2')*n('f-qt-ceb2') + parseDinheiro('f-pr-ceb3')*n('f-qt-ceb3') + parseDinheiro('f-pr-ceb4')*n('f-qt-ceb4');
+  var sacas = n('f-qt-esp') + n('f-qt-div') + n('f-qt-x') + n('f-qt-3x') + n('f-qt-esc')
+    + n('f-qt-ceb1') + n('f-qt-ceb2') + n('f-qt-ceb3') + n('f-qt-ceb4');
   var on = document.getElementById('f-tem-frete').checked;
   var fr = on ? sacas * parseDinheiro('f-frete-saco') : 0;
-  var funrural = document.getElementById('f-funrural').checked ? sub * 0.0163 : 0;
+  var funruralOn = document.getElementById('f-funrural').checked;
+  var funruralPct = parseDinheiro('f-funrural-pct');
+  var funrural = funruralOn ? sub * (funruralPct/100) : 0;
   var dv = parseDinheiro('f-desc-valor');
   document.getElementById('fr-sub').textContent = fmt(sub);
   document.getElementById('fr-frete').textContent = '- ' + fmt(fr);
   document.getElementById('fr-frete-row').style.display = (on&&fr>0) ? 'flex' : 'none';
+  document.getElementById('fr-funrural-label').textContent = '(-) Funrural ' + (funruralPct?funruralPct.toFixed(2).replace('.',','):'0,00') + '%';
   document.getElementById('fr-funrural').textContent = '- ' + fmt(funrural);
-  document.getElementById('fr-funrural-row').style.display = document.getElementById('f-funrural').checked ? 'flex' : 'none';
+  document.getElementById('fr-funrural-row').style.display = funruralOn ? 'flex' : 'none';
   var dn = vv('f-desc-nome') || 'Desconto extra';
   document.getElementById('fr-desc-label').textContent = '(-) ' + dn;
   document.getElementById('fr-desc').textContent = '- ' + fmt(dv);
@@ -845,13 +886,19 @@ function gerarFechamento() {
   var qt_x=n('f-qt-x'), pr_x=parseDinheiro('f-pr-x');
   var qt_3x=n('f-qt-3x'), pr_3x=parseDinheiro('f-pr-3x');
   var qt_esc=n('f-qt-esc'), pr_esc=parseDinheiro('f-pr-esc');
-  var sacas = qt_esp+qt_div+qt_x+qt_3x+qt_esc;
+  var qt_ceb1=n('f-qt-ceb1'), pr_ceb1=parseDinheiro('f-pr-ceb1');
+  var qt_ceb2=n('f-qt-ceb2'), pr_ceb2=parseDinheiro('f-pr-ceb2');
+  var qt_ceb3=n('f-qt-ceb3'), pr_ceb3=parseDinheiro('f-pr-ceb3');
+  var qt_ceb4=n('f-qt-ceb4'), pr_ceb4=parseDinheiro('f-pr-ceb4');
+  var sacas = qt_esp+qt_div+qt_x+qt_3x+qt_esc+qt_ceb1+qt_ceb2+qt_ceb3+qt_ceb4;
   var on = document.getElementById('f-tem-frete').checked;
   var freteSaco = on ? parseDinheiro('f-frete-saco') : 0;
   var freteTotal = sacas * freteSaco;
-  var sub = qt_esp*pr_esp + qt_div*pr_div + qt_x*pr_x + qt_3x*pr_3x + qt_esc*pr_esc;
+  var sub = qt_esp*pr_esp + qt_div*pr_div + qt_x*pr_x + qt_3x*pr_3x + qt_esc*pr_esc
+    + qt_ceb1*pr_ceb1 + qt_ceb2*pr_ceb2 + qt_ceb3*pr_ceb3 + qt_ceb4*pr_ceb4;
   var temFunrural = document.getElementById('f-funrural').checked;
-  var funrural = temFunrural ? sub * 0.0163 : 0;
+  var funruralPct = parseDinheiro('f-funrural-pct');
+  var funrural = temFunrural ? sub * (funruralPct/100) : 0;
   var descVal = parseDinheiro('f-desc-valor'), descNome = vv('f-desc-nome') || 'Desconto extra';
   var totalFinal = Math.max(0, sub-freteTotal-funrural-descVal);
   var comissaoSaco = _comTipo === 'saca' ? parseDinheiro('f-comissao-saco') : 0;
@@ -866,9 +913,11 @@ function gerarFechamento() {
   supa('fechamentos', {method:'POST', body:JSON.stringify({
     num_nota:numStr, cliente:cliente, cidade:cidade, tel:tel, motorista:motorista, placa:placa,
     qt_esp:qt_esp, pr_esp:pr_esp, qt_div:qt_div, pr_div:pr_div, qt_x:qt_x, pr_x:pr_x,
-    qt_3x:qt_3x, pr_3x:pr_3x, qt_esc:qt_esc, pr_esc:pr_esc, sacas:sacas,
+    qt_3x:qt_3x, pr_3x:pr_3x, qt_esc:qt_esc, pr_esc:pr_esc,
+    qt_ceb1:qt_ceb1, pr_ceb1:pr_ceb1, qt_ceb2:qt_ceb2, pr_ceb2:pr_ceb2,
+    qt_ceb3:qt_ceb3, pr_ceb3:pr_ceb3, qt_ceb4:qt_ceb4, pr_ceb4:pr_ceb4, sacas:sacas,
     subtotal:sub, frete_saco:freteSaco, frete_total:freteTotal, tem_frete:on,
-    funrural:funrural, tem_funrural:temFunrural, desc_valor:descVal, desc_nome:descNome,
+    funrural:funrural, tem_funrural:temFunrural, funrural_pct:funruralPct, desc_valor:descVal, desc_nome:descNome,
     total_final:totalFinal, dias:dias, vencimento:venc, status:'aberto',
     data_fechamento:hoje(), data_venda:dataVenda,
     comissao_saco:comissaoSaco, comissao_pct:comissaoPct, comissao_total:comissaoTotal
@@ -880,9 +929,13 @@ function gerarFechamento() {
     if(qt_x>0) li += '<tr><td>X</td><td class="r">'+qt_x+'</td><td class="r">'+fmt(pr_x)+'</td><td class="r">'+fmt(qt_x*pr_x)+'</td></tr>';
     if(qt_3x>0) li += '<tr><td>3&#xaa; X</td><td class="r">'+qt_3x+'</td><td class="r">'+fmt(pr_3x)+'</td><td class="r">'+fmt(qt_3x*pr_3x)+'</td></tr>';
     if(qt_esc>0) li += '<tr><td>Escovada</td><td class="r">'+qt_esc+'</td><td class="r">'+fmt(pr_esc)+'</td><td class="r">'+fmt(qt_esc*pr_esc)+'</td></tr>';
+    if(qt_ceb1>0) li += '<tr><td>Cebola cx 1</td><td class="r">'+qt_ceb1+'</td><td class="r">'+fmt(pr_ceb1)+'</td><td class="r">'+fmt(qt_ceb1*pr_ceb1)+'</td></tr>';
+    if(qt_ceb2>0) li += '<tr><td>Cebola cx 2</td><td class="r">'+qt_ceb2+'</td><td class="r">'+fmt(pr_ceb2)+'</td><td class="r">'+fmt(qt_ceb2*pr_ceb2)+'</td></tr>';
+    if(qt_ceb3>0) li += '<tr><td>Cebola cx 3</td><td class="r">'+qt_ceb3+'</td><td class="r">'+fmt(pr_ceb3)+'</td><td class="r">'+fmt(qt_ceb3*pr_ceb3)+'</td></tr>';
+    if(qt_ceb4>0) li += '<tr><td>Cebola cx 4</td><td class="r">'+qt_ceb4+'</td><td class="r">'+fmt(pr_ceb4)+'</td><td class="r">'+fmt(qt_ceb4*pr_ceb4)+'</td></tr>';
     var descs = '';
     if(on&&freteTotal>0) descs += '<div class="dt-row dt-desc"><span>(-) Frete ('+sacas+' x '+fmt(freteSaco)+')</span><span>- '+fmt(freteTotal)+'</span></div>';
-    if(temFunrural) descs += '<div class="dt-row dt-desc"><span>(-) Funrural (1,63%)</span><span>- '+fmt(funrural)+'</span></div>';
+    if(temFunrural) descs += '<div class="dt-row dt-desc"><span>(-) Funrural ('+funruralPct.toFixed(2).replace('.',',')+'%)</span><span>- '+fmt(funrural)+'</span></div>';
     if(descVal>0) descs += '<div class="dt-row dt-desc"><span>(-) '+descNome+'</span><span>- '+fmt(descVal)+'</span></div>';
     var logo = '<img src="' + LOGO + '" style="height:72px;object-fit:contain"/>';
     var metaMot = motorista ? '<div><span>Motorista: </span><strong>'+motorista+'</strong>' + (placa ? '&nbsp;&nbsp;<span>Placa: </span><strong>'+placa+'</strong>' : '') + '</div>' : '';
@@ -972,6 +1025,7 @@ function renderListaPagamentos() {
     btnCom += ' onclick="toggleComissao(\'' + f.id + '\',' + (comRec?'true':'false') + ')">';
     btnCom += (comRec?'&#x1F4B0; Com. Recebida':'&#x1F4B0; Receber Com.') + '</button>';
     html += btnCom;
+    html += '<button class="btn-anexo" onclick="abrirEdicaoNota(' + idx + ')">&#x270F;&#xFE0F; Editar</button>';
     html += '<button class="btn-anexo" onclick="abrirAnexos(\'' + f.id + '\')">&#x1F4CE; Anexos</button>';
     html += '<button class="btn-excluir" onclick="excluirNota(\'' + f.id + '\',\'' + f.num_nota + '\')">&#x1F5D1; Excluir</button>';
     html += '</div>';
@@ -1012,6 +1066,64 @@ function toggleComissao(id, jaRecebida) {
   supa('fechamentos?id=eq.' + id, {method:'PATCH', body:JSON.stringify({comissao_recebida:!jaRecebida})}).then(function() {
     mostrarCarregando(false); buscarPagamentos();
   });
+}
+var GRADES_EDIT = [['esp','Especial'],['div','Diversa'],['x','X'],['3x','3ª X'],['esc','Escovada'],['ceb1','Cebola cx 1'],['ceb2','Cebola cx 2'],['ceb3','Cebola cx 3'],['ceb4','Cebola cx 4']];
+function abrirEdicaoNota(idx) {
+  var f = _pgDados[idx];
+  if(!f) return;
+  _editandoId = f.id;
+  var html = '';
+  GRADES_EDIT.forEach(function(g) {
+    var qt = parseFloat(f['qt_'+g[0]])||0;
+    if(qt<=0) return;
+    html += '<div class="field" style="margin-bottom:10px"><label>' + g[1] + ' (' + qt + ' sc) &#x2014; R$/saca</label>' +
+      '<input type="text" id="edit-pr-' + g[0] + '" inputmode="decimal" value="' + (parseFloat(f['pr_'+g[0]])||0).toFixed(2).replace('.',',') + '" oninput="mascaraDinheiro(this)"/></div>';
+  });
+  html += '<div class="tog-row" style="margin:14px 0 10px;padding-top:14px;border-top:1px solid #f0f0f0">' +
+    '<div><div class="tog-label">Funrural</div><div class="tog-sub">% sobre o subtotal</div></div>' +
+    '<label class="switch"><input type="checkbox" id="edit-funrural" ' + (f.tem_funrural?'checked':'') + '/><span class="slider"></span></label></div>';
+  html += '<div class="field" style="margin-bottom:14px"><label>Percentual do Funrural (%)</label>' +
+    '<input type="text" id="edit-funrural-pct" inputmode="decimal" value="' + (parseFloat(f.funrural_pct)||1.63).toFixed(2).replace('.',',') + '" oninput="mascaraDinheiro(this)"/></div>';
+  html += '<div class="field" style="margin-bottom:0"><label>Comiss&#xe3;o total (R$)</label>' +
+    '<input type="text" id="edit-comissao-total" inputmode="decimal" value="' + (parseFloat(f.comissao_total)||0).toFixed(2).replace('.',',') + '" oninput="mascaraDinheiro(this)"/></div>';
+  document.getElementById('edit-lista').innerHTML = html;
+  document.getElementById('modal-editar').classList.add('show');
+}
+function salvarEdicaoNota() {
+  var f = _pgDados.find(function(x){ return x.id === _editandoId; });
+  if(!f) return;
+  var sub = 0, sacas = 0;
+  var patch = {};
+  GRADES_EDIT.forEach(function(g) {
+    var qt = parseFloat(f['qt_'+g[0]])||0;
+    var input = document.getElementById('edit-pr-'+g[0]);
+    var pr = input ? parseDinheiro('edit-pr-'+g[0]) : (parseFloat(f['pr_'+g[0]])||0);
+    patch['pr_'+g[0]] = pr;
+    sub += qt*pr;
+    sacas += qt;
+  });
+  var freteSaco = parseFloat(f.frete_saco)||0;
+  var freteTotal = f.tem_frete ? sacas*freteSaco : 0;
+  var temFunrural = document.getElementById('edit-funrural').checked;
+  var funruralPct = parseDinheiro('edit-funrural-pct');
+  var funrural = temFunrural ? sub*(funruralPct/100) : 0;
+  var descVal = parseFloat(f.desc_valor)||0;
+  var totalFinal = Math.max(0, sub-freteTotal-funrural-descVal);
+  var comissaoTotal = parseDinheiro('edit-comissao-total');
+  patch.subtotal = sub;
+  patch.frete_total = freteTotal;
+  patch.tem_funrural = temFunrural;
+  patch.funrural = funrural;
+  patch.funrural_pct = funruralPct;
+  patch.total_final = totalFinal;
+  patch.comissao_total = comissaoTotal;
+  mostrarCarregando(true);
+  supa('fechamentos?id=eq.' + f.id, {method:'PATCH', body:JSON.stringify(patch)}).then(function() {
+    mostrarCarregando(false);
+    document.getElementById('modal-editar').classList.remove('show');
+    _editandoId = null;
+    buscarPagamentos();
+  }).catch(function(){ mostrarCarregando(false); alert('Erro ao salvar edição.'); });
 }
 function excluirNota(id, numNota) {
   if(!confirm('Deseja realmente excluir a nota #' + numNota + '? Esta acao nao pode ser desfeita.')) return;
@@ -1073,14 +1185,17 @@ function renderFinanceiro() {
       return (!fDataDe||dvConv>=fDataDe) && (!fDataAte||dvConv<=fDataAte);
     });
     _finDados = fil;
-    var totalVendas=0, totalSacas=0, comAberto=0, comPago=0, cntAberto=0, cntPago=0;
+    var totalVendas=0, totalSacas=0, comAberto=0, comPago=0, cntAberto=0, cntPago=0, vendasAberto=0, cntVendasAberto=0;
     fil.forEach(function(f) {
       totalVendas += parseFloat(f.total_final)||0;
       totalSacas += parseFloat(f.sacas)||0;
       var com = parseFloat(f.comissao_total)||0;
       if(f.comissao_recebida){ comPago+=com; cntPago++; }
       else if(com>0){ comAberto+=com; cntAberto++; }
+      if(f.status !== 'pago'){ vendasAberto += parseFloat(f.total_final)||0; cntVendasAberto++; }
     });
+    document.getElementById('fin-vendas-aberto').textContent = fmt(vendasAberto);
+    document.getElementById('fin-vendas-aberto-qt').textContent = cntVendasAberto + ' em aberto';
     document.getElementById('fin-total-vendas').textContent = fmt(totalVendas);
     document.getElementById('fin-total-notas').textContent = fil.length + ' nota' + (fil.length!==1?'s':'');
     document.getElementById('fin-total-sacas').textContent = totalSacas.toLocaleString('pt-BR');
@@ -1134,6 +1249,26 @@ function abrirDetalheComissao(tipo) {
     }).join('');
   }
   document.getElementById('modal-comissao').classList.add('show');
+}
+function abrirDetalheVendasAberto() {
+  var fil = (_finDados||[]).filter(function(f) { return f.status !== 'pago'; });
+  document.getElementById('modal-vendas-aberto-titulo').innerHTML = 'Vendas em Aberto (' + fil.length + ')';
+  var el = document.getElementById('modal-vendas-aberto-lista');
+  if(!fil.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Nenhuma nota em aberto.</div>';
+  } else {
+    el.innerHTML = fil.map(function(f) {
+      return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0">' +
+        '<div style="display:flex;justify-content:space-between"><strong>'+f.cliente+'</strong><span style="font-size:12px;color:#aaa">#'+f.num_nota+'</span></div>' +
+        '<div style="font-size:12px;color:#888;margin-top:4px">'+fmtData(f.data_venda)+' &middot; '+(parseFloat(f.sacas)||0)+' sacas &middot; '+f.cidade+(f.vencimento?' &middot; Venc: '+fmtData(f.vencimento):'')+'</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px;flex-wrap:wrap">' +
+          '<span style="font-size:14px;font-weight:700;color:#c0392b">Venda: '+fmt(parseFloat(f.total_final)||0)+'</span>' +
+          '<button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="togglePago(\''+f.id+'\',\'aberto\');document.getElementById(\'modal-vendas-aberto\').classList.remove(\'show\')">&#x2705; Marcar pago</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('modal-vendas-aberto').classList.add('show');
 }
 function editarComissao(id, comAtual) {
   var nova = prompt('Novo valor da comissão (R$):', (parseFloat(comAtual)||0).toFixed(2).replace('.',','));
@@ -1225,16 +1360,30 @@ function gerarPagamento(idxOrObj) {
   var f = typeof idxOrObj === 'number' ? _pgDados[idxOrObj] : idxOrObj;
   if(!f) return;
   var sub = parseFloat(f.subtotal)||0;
-  var funr = sub * 0.015;
+  var temFunrural = !!f.tem_funrural;
+  var funr = temFunrural ? (parseFloat(f.funrural)||0) : 0;
+  var funrPct = parseFloat(f.funrural_pct)||1.63;
+  var freteTotal = parseFloat(f.frete_total)||0;
+  var descVal = parseFloat(f.desc_valor)||0;
+  var descNome = f.desc_nome || 'Desconto extra';
+  var totalFinal = f.total_final!=null ? parseFloat(f.total_final) : Math.max(0, sub-freteTotal-funr-descVal);
   var li = '';
   if(f.qt_esp>0) li += '<tr><td>Batata Especial</td><td class="r">'+f.qt_esp+' sc</td><td class="r">'+fmt(parseFloat(f.pr_esp))+'</td><td class="r">'+fmt(f.qt_esp*parseFloat(f.pr_esp))+'</td></tr>';
   if(f.qt_div>0) li += '<tr><td>Batata Diversa</td><td class="r">'+f.qt_div+' sc</td><td class="r">'+fmt(parseFloat(f.pr_div))+'</td><td class="r">'+fmt(f.qt_div*parseFloat(f.pr_div))+'</td></tr>';
   if(f.qt_x>0) li += '<tr><td>Batata X</td><td class="r">'+f.qt_x+' sc</td><td class="r">'+fmt(parseFloat(f.pr_x))+'</td><td class="r">'+fmt(f.qt_x*parseFloat(f.pr_x))+'</td></tr>';
   if(f.qt_3x>0) li += '<tr><td>Batata 3&#xaa; X</td><td class="r">'+f.qt_3x+' sc</td><td class="r">'+fmt(parseFloat(f.pr_3x))+'</td><td class="r">'+fmt(f.qt_3x*parseFloat(f.pr_3x))+'</td></tr>';
   if(f.qt_esc>0) li += '<tr><td>Batata Escovada</td><td class="r">'+f.qt_esc+' sc</td><td class="r">'+fmt(parseFloat(f.pr_esc))+'</td><td class="r">'+fmt(f.qt_esc*parseFloat(f.pr_esc))+'</td></tr>';
+  if(f.qt_ceb1>0) li += '<tr><td>Cebola cx 1</td><td class="r">'+f.qt_ceb1+' sc</td><td class="r">'+fmt(parseFloat(f.pr_ceb1))+'</td><td class="r">'+fmt(f.qt_ceb1*parseFloat(f.pr_ceb1))+'</td></tr>';
+  if(f.qt_ceb2>0) li += '<tr><td>Cebola cx 2</td><td class="r">'+f.qt_ceb2+' sc</td><td class="r">'+fmt(parseFloat(f.pr_ceb2))+'</td><td class="r">'+fmt(f.qt_ceb2*parseFloat(f.pr_ceb2))+'</td></tr>';
+  if(f.qt_ceb3>0) li += '<tr><td>Cebola cx 3</td><td class="r">'+f.qt_ceb3+' sc</td><td class="r">'+fmt(parseFloat(f.pr_ceb3))+'</td><td class="r">'+fmt(f.qt_ceb3*parseFloat(f.pr_ceb3))+'</td></tr>';
+  if(f.qt_ceb4>0) li += '<tr><td>Cebola cx 4</td><td class="r">'+f.qt_ceb4+' sc</td><td class="r">'+fmt(parseFloat(f.pr_ceb4))+'</td><td class="r">'+fmt(f.qt_ceb4*parseFloat(f.pr_ceb4))+'</td></tr>';
+  var descs = '';
+  if(freteTotal>0) descs += '<div class="dt-row dt-desc"><span>(-) Frete</span><span>- '+fmt(freteTotal)+'</span></div>';
+  if(temFunrural) descs += '<div class="dt-row dt-desc"><span>(-) Funrural ('+funrPct.toFixed(2).replace('.',',')+'%)</span><span>- '+fmt(funr)+'</span></div>';
+  if(descVal>0) descs += '<div class="dt-row dt-desc"><span>(-) '+descNome+'</span><span>- '+fmt(descVal)+'</span></div>';
   var logo = '<img src="' + LOGO + '" style="height:72px;object-fit:contain"/>';
   var vencBox = f.vencimento ? '<div class="venc-box">&#x1F4C5; <strong>Vencimento: '+fmtData(f.vencimento)+'</strong>'+(f.dias?' &nbsp;('+f.dias+' dias)':'')+'</div>' : '';
-  abrirView('<div class="doc"><div class="doc-num">Nota N&#xba; '+f.num_nota+'</div><div class="doc-logo-img">'+logo+'</div><div class="doc-title-p">DOCUMENTO DE PAGAMENTO</div><div class="doc-meta"><div><span>Cliente: </span><strong>'+f.cliente+'</strong></div><div><span>Cidade: </span><strong>'+f.cidade+'</strong></div>'+(f.tel?'<div><span>Tel: </span><strong>'+f.tel+'</strong></div>':'')+'<div><span>Data da venda: </span><strong>'+fmtData(f.data_venda)+'</strong></div></div>'+vencBox+'<table class="doc-table"><thead><tr><th>Produto</th><th class="r">Quantidade</th><th class="r">P. Unit.</th><th class="r">Total</th></tr></thead><tbody>'+li+'</tbody></table><div class="doc-totais"><div class="dt-row"><span>Subtotal</span><span>'+fmt(sub)+'</span></div><div class="dt-row dt-desc"><span>(-) Funrural (1,5%%)</span><span>- '+fmt(funr)+'</span></div><div class="dt-row dt-final"><span>TOTAL FINAL</span><span>'+fmt(sub-funr)+'</span></div></div></div>');
+  abrirView('<div class="doc"><div class="doc-num">Nota N&#xba; '+f.num_nota+'</div><div class="doc-logo-img">'+logo+'</div><div class="doc-title-p">DOCUMENTO DE PAGAMENTO</div><div class="doc-meta"><div><span>Cliente: </span><strong>'+f.cliente+'</strong></div><div><span>Cidade: </span><strong>'+f.cidade+'</strong></div>'+(f.tel?'<div><span>Tel: </span><strong>'+f.tel+'</strong></div>':'')+'<div><span>Data da venda: </span><strong>'+fmtData(f.data_venda)+'</strong></div></div>'+vencBox+'<table class="doc-table"><thead><tr><th>Produto</th><th class="r">Quantidade</th><th class="r">P. Unit.</th><th class="r">Total</th></tr></thead><tbody>'+li+'</tbody></table><div class="doc-totais"><div class="dt-row"><span>Subtotal</span><span>'+fmt(sub)+'</span></div>'+descs+'<div class="dt-row dt-final"><span>TOTAL FINAL</span><span>'+fmt(totalFinal)+'</span></div></div></div>');
 }
 
 </script>
