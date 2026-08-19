@@ -473,6 +473,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <p class="sl">Detalhamento</p>
     <div id="fin-lista"></div>
+    <div id="fin-paginacao" style="display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap"></div>
   </div>
 </div>
 
@@ -503,6 +504,7 @@ var _comTipo = 'saca';
 var _pgAtual = 1;
 var _pgDados = [];
 var _finDados = [];
+var _finAtual = 1;
 var _pendentes = [];
 var PG_SIZE = 10;
 
@@ -1214,6 +1216,7 @@ function renderFinanceiro() {
       return (!fDataDe||dvConv>=fDataDe) && (!fDataAte||dvConv<=fDataAte);
     });
     _finDados = fil;
+    _finAtual = 1;
     var totalVendas=0, totalSacas=0, comAberto=0, comPago=0, cntAberto=0, cntPago=0, vendasAberto=0, cntVendasAberto=0;
     fil.forEach(function(f) {
       totalVendas += parseFloat(f.total_final)||0;
@@ -1233,8 +1236,32 @@ function renderFinanceiro() {
     document.getElementById('fin-comissao-pago').textContent = fmt(comPago);
     document.getElementById('fin-comissao-pago-qt').textContent = cntPago + ' recebida' + (cntPago!==1?'s':'');
     document.getElementById('fin-comissao-total').textContent = fmt(comAberto+comPago);
-    if(!fil.length){ el.innerHTML = '<div class="lista-vazia"><div style="font-size:36px;margin-bottom:8px">&#x1F4ED;</div>Nenhum registro.</div>'; return; }
-    el.innerHTML = fil.map(function(f) {
+    renderListaFinanceiro();
+  });
+}
+function renderPaginacaoFin() {
+  var total = _finDados.length;
+  var totalPgs = Math.ceil(total/PG_SIZE);
+  var el = document.getElementById('fin-paginacao');
+  if(totalPgs <= 1){ el.innerHTML = ''; return; }
+  var btns = '';
+  for(var i=1;i<=totalPgs;i++) {
+    btns += '<button class="pg-btn' + (i===_finAtual?' ativo':'') + '" onclick="irPaginaFin('+i+')">' + i + '</button>';
+  }
+  el.innerHTML = btns;
+}
+function irPaginaFin(pg) {
+  _finAtual = pg;
+  renderListaFinanceiro();
+  window.scrollTo(0,0);
+}
+function renderListaFinanceiro() {
+  var el = document.getElementById('fin-lista');
+  var fil = _finDados;
+  if(!fil.length){ el.innerHTML = '<div class="lista-vazia"><div style="font-size:36px;margin-bottom:8px">&#x1F4ED;</div>Nenhum registro.</div>'; renderPaginacaoFin(); return; }
+    var start = (_finAtual-1) * PG_SIZE;
+    var pagina = fil.slice(start, start+PG_SIZE);
+    el.innerHTML = pagina.map(function(f) {
       var isPago = f.status === 'pago';
       var com = parseFloat(f.comissao_total)||0;
       var comSaco = parseFloat(f.comissao_saco)||0;
@@ -1250,7 +1277,7 @@ function renderFinanceiro() {
         '</div>' +
       '</div>';
     }).join('');
-  });
+  renderPaginacaoFin();
 }
 function abrirDetalheComissao(tipo) {
   var fil = (_finDados||[]).filter(function(f) {
