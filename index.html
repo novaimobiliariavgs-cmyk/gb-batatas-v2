@@ -1101,6 +1101,11 @@ function abrirEdicaoNota(idx) {
       '<input type="text" id="edit-pr-' + g[0] + '" inputmode="decimal" value="' + (parseFloat(f['pr_'+g[0]])||0).toFixed(2).replace('.',',') + '" oninput="mascaraDinheiro(this)"/></div>';
   });
   html += '<div class="tog-row" style="margin:14px 0 10px;padding-top:14px;border-top:1px solid #f0f0f0">' +
+    '<div><div class="tog-label">Frete</div><div class="tog-sub">Descontar frete do total</div></div>' +
+    '<label class="switch"><input type="checkbox" id="edit-tem-frete" ' + (f.tem_frete?'checked':'') + '/><span class="slider"></span></label></div>';
+  html += '<div class="field" style="margin-bottom:14px"><label>Frete (R$/saca)</label>' +
+    '<input type="text" id="edit-frete-saco" inputmode="decimal" value="' + (parseFloat(f.frete_saco)||0).toFixed(2).replace('.',',') + '" oninput="mascaraDinheiro(this)"/></div>';
+  html += '<div class="tog-row" style="margin:14px 0 10px;padding-top:14px;border-top:1px solid #f0f0f0">' +
     '<div><div class="tog-label">Funrural</div><div class="tog-sub">% sobre o subtotal</div></div>' +
     '<label class="switch"><input type="checkbox" id="edit-funrural" ' + (f.tem_funrural?'checked':'') + '/><span class="slider"></span></label></div>';
   html += '<div class="field" style="margin-bottom:14px"><label>Percentual do Funrural (%)</label>' +
@@ -1123,8 +1128,9 @@ function salvarEdicaoNota() {
     sub += qt*pr;
     sacas += qt;
   });
-  var freteSaco = parseFloat(f.frete_saco)||0;
-  var freteTotal = f.tem_frete ? sacas*freteSaco : 0;
+  var freteSaco = parseDinheiro('edit-frete-saco');
+  var temFrete = document.getElementById('edit-tem-frete').checked;
+  var freteTotal = temFrete ? sacas*freteSaco : 0;
   var temFunrural = document.getElementById('edit-funrural').checked;
   var funruralPct = parseDinheiro('edit-funrural-pct');
   var funrural = temFunrural ? sub*(funruralPct/100) : 0;
@@ -1132,6 +1138,8 @@ function salvarEdicaoNota() {
   var totalFinal = Math.max(0, sub-freteTotal-funrural-descVal);
   var comissaoTotal = parseDinheiro('edit-comissao-total');
   patch.subtotal = sub;
+  patch.frete_saco = freteSaco;
+  patch.tem_frete = temFrete;
   patch.frete_total = freteTotal;
   patch.tem_funrural = temFunrural;
   patch.funrural = funrural;
