@@ -150,6 +150,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="modal-close" onclick="document.getElementById('modal-comissao').classList.remove('show')">&#x2715;</button>
     <h3 id="modal-comissao-titulo">Comiss&#xe3;o</h3>
     <div id="modal-comissao-lista" style="margin-top:12px"></div>
+    <div id="modal-comissao-pag" style="display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap"></div>
   </div>
 </div>
 
@@ -159,6 +160,40 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="modal-close" onclick="document.getElementById('modal-vendas-aberto').classList.remove('show')">&#x2715;</button>
     <h3 id="modal-vendas-aberto-titulo">Vendas em Aberto</h3>
     <div id="modal-vendas-aberto-lista" style="margin-top:12px"></div>
+    <div id="modal-vendas-aberto-pag" style="display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- MODAL VENCENDO EM BREVE -->
+<div class="modal-bg" id="modal-vencendo">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-vencendo').classList.remove('show')">&#x2715;</button>
+    <h3 id="modal-vencendo-titulo">Vencendo em Breve</h3>
+    <p class="sl" id="modal-vencidas-titulo" style="color:#c0392b">&#x1F534; Vencidas</p>
+    <div id="modal-vencidas-lista" style="margin-top:8px"></div>
+    <div id="modal-vencidas-pag" style="display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap"></div>
+    <p class="sl" id="modal-vencendo-sub-titulo" style="color:#f9a825;margin-top:16px">&#x1F7E1; Vencendo em Breve</p>
+    <div id="modal-vencendo-lista" style="margin-top:8px"></div>
+    <div id="modal-vencendo-pag" style="display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- MODAL SAFRAS -->
+<div class="modal-bg" id="modal-safras">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-safras').classList.remove('show')">&#x2715;</button>
+    <h3>&#x1F33E; Safras</h3>
+    <div class="field" style="margin-top:12px"><label>Nome da Safra</label>
+      <input type="text" id="safra-nome" placeholder="Ex: 2025/2026"/></div>
+    <div class="filtros" style="margin:10px 0">
+      <input type="date" id="safra-data-inicio" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none"/>
+      <span style="font-size:12px;color:#888;align-self:center;white-space:nowrap">at&#xe9;</span>
+      <input type="date" id="safra-data-fim" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none"/>
+    </div>
+    <button class="btn-gerar" id="safra-btn-salvar" onclick="salvarSafra()">Salvar Safra</button>
+    <button id="safra-btn-cancelar" onclick="cancelarEdicaoSafra()" style="display:none;width:100%;padding:10px;background:#fff;color:#888;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">Cancelar edi&#xe7;&#xe3;o</button>
+    <p class="sl" style="margin-top:16px">Safras cadastradas</p>
+    <div id="safras-lista" style="margin-top:8px"></div>
   </div>
 </div>
 
@@ -435,6 +470,13 @@ input:checked+.slider:before{transform:translateX(20px)}
       <span style="font-size:12px;color:#888;align-self:center;white-space:nowrap">at&#xe9;</span>
       <input type="date" id="fin-data-ate" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none"/>
     </div>
+    <p class="sl">Safra</p>
+    <div class="filtros" style="margin-bottom:10px;gap:8px">
+      <select id="fin-safra-select" onchange="selecionarSafra()" style="flex:1;font-size:14px;padding:10px 8px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;color:#555;-webkit-appearance:none">
+        <option value="geral">Geral (todos os dados)</option>
+      </select>
+      <button onclick="abrirSafras()" style="padding:10px 14px;background:#fff;color:#1a5c2a;border:1px solid #1a5c2a;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">&#x1F33E; Safras</button>
+    </div>
     <button onclick="renderFinanceiro()" style="width:100%;padding:10px;background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px">&#x21BB; Atualizar</button>
     <button onclick="exportarBackupCSV()" style="width:100%;padding:10px;background:#1a5c2a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px">&#x2B07; Exportar Backup CSV</button>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
@@ -448,11 +490,21 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div id="fin-total-sacas" style="font-size:20px;font-weight:800;color:#1a5c2a">0</div>
         <div style="font-size:12px;color:#aaa;margin-top:4px">sacas vendidas</div>
       </div>
-      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #c0392b;cursor:pointer;grid-column:1 / -1" onclick="abrirDetalheVendasAberto()">
-        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vendas em Aberto (a Receber)</div>
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #c0392b;cursor:pointer" onclick="abrirDetalheVendasAberto()">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vendas em Aberto</div>
         <div id="fin-vendas-aberto" style="font-size:20px;font-weight:800;color:#c0392b">R$ 0,00</div>
         <div id="fin-vendas-aberto-qt" style="font-size:12px;color:#aaa;margin-top:4px">0 em aberto</div>
         <div style="font-size:11px;color:#c0392b;margin-top:4px">ver detalhes &#x2192;</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;border-left:3px solid #f9a825;cursor:pointer" onclick="abrirDetalheVencendo()">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Vencendo em Breve</div>
+        <div id="fin-vencendo" style="font-size:20px;font-weight:800;color:#f9a825">R$ 0,00</div>
+        <div id="fin-vencendo-qt" style="font-size:12px;color:#aaa;margin-top:4px">0 na semana</div>
+        <div style="display:flex;justify-content:space-between;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid #f0f0f0">
+          <span id="fin-vencidas-qt" style="font-size:11px;color:#c0392b;font-weight:700">&#x1F534; 0 vencida(s)</span>
+          <span id="fin-vencendo-futuras-qt" style="font-size:11px;color:#f9a825;font-weight:700">&#x1F7E1; 0 a vencer</span>
+        </div>
+        <div style="font-size:11px;color:#f9a825;margin-top:4px">ver detalhes &#x2192;</div>
       </div>
       <div class="card" style="text-align:center;padding:14px;border-left:3px solid #f9a825;cursor:pointer" onclick="abrirDetalheComissao('aberto')">
         <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Comiss&#xe3;o a Receber</div>
@@ -505,6 +557,8 @@ var _pgAtual = 1;
 var _pgDados = [];
 var _finDados = [];
 var _finAtual = 1;
+var _safras = [];
+var _editandoSafraId = null;
 var _pendentes = [];
 var PG_SIZE = 10;
 
@@ -572,6 +626,14 @@ function fmtData(val) {
   if(!isNaN(d.getTime())) return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
   return s;
 }
+function parseDataBR(val) {
+  if(!val) return null;
+  var s = String(val);
+  var m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(m) return new Date(+m[3], +m[2]-1, +m[1]);
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
 function calcVenc(dias) {
   var d = new Date(); d.setDate(d.getDate()+dias);
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
@@ -599,7 +661,7 @@ function mudarAba(id, el) {
   el.classList.add('ativa');
   document.getElementById('tela-' + id).classList.add('ativa');
   if(id === 'pagamento') buscarPagamentos();
-  if(id === 'financeiro') renderFinanceiro();
+  if(id === 'financeiro') { carregarSafras(); renderFinanceiro(); }
   if(id === 'fechamento') carregarPendentes();
   window.scrollTo(0,0);
 }
@@ -1203,6 +1265,90 @@ function uploadAnexo(input, tipo) {
   }).catch(function(){ mostrarCarregando(false); alert('Erro ao fazer upload.'); });
 }
 
+// ── SAFRAS ──
+function carregarSafras() {
+  return supa('safras?order=data_inicio.desc').then(function(lista) {
+    _safras = (lista && !lista.error) ? lista : [];
+    var sel = document.getElementById('fin-safra-select');
+    var atual = sel.value || 'geral';
+    sel.innerHTML = '<option value="geral">Geral (todos os dados)</option>' +
+      _safras.map(function(s){ return '<option value="'+s.id+'">'+s.nome+'</option>'; }).join('');
+    sel.value = _safras.some(function(s){ return String(s.id)===atual; }) ? atual : 'geral';
+    renderListaSafras();
+  });
+}
+function renderListaSafras() {
+  var el = document.getElementById('safras-lista');
+  if(!_safras.length) { el.innerHTML = '<div style="text-align:center;padding:16px;color:#aaa">Nenhuma safra cadastrada.</div>'; return; }
+  el.innerHTML = _safras.map(function(s) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">' +
+      '<div><strong>'+s.nome+'</strong><div style="font-size:12px;color:#888;margin-top:2px">'+fmtData(s.data_inicio)+' &#x2014; '+fmtData(s.data_fim)+'</div></div>' +
+      '<div style="display:flex;gap:6px">' +
+        '<button class="btn-sm" style="background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a" onclick="editarSafra(\''+s.id+'\')">&#x270F;&#xFE0F; Editar</button>' +
+        '<button class="btn-sm" style="background:#fdecea;color:#c0392b" onclick="excluirSafra(\''+s.id+'\')">&#x1F5D1; Excluir</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+function salvarSafra() {
+  var nome = document.getElementById('safra-nome').value.trim();
+  var ini = document.getElementById('safra-data-inicio').value;
+  var fim = document.getElementById('safra-data-fim').value;
+  if(!nome || !ini || !fim) { alert('Preencha nome e o período da safra.'); return; }
+  mostrarCarregando(true);
+  var req = _editandoSafraId
+    ? supa('safras?id=eq.' + _editandoSafraId, {method:'PATCH', body:JSON.stringify({nome:nome, data_inicio:ini, data_fim:fim})})
+    : supa('safras', {method:'POST', body:JSON.stringify({nome:nome, data_inicio:ini, data_fim:fim})});
+  req.then(function() {
+    mostrarCarregando(false);
+    cancelarEdicaoSafra();
+    carregarSafras();
+  }).catch(function(){ mostrarCarregando(false); alert('Erro ao salvar safra.'); });
+}
+function editarSafra(id) {
+  var s = _safras.find(function(x){ return String(x.id) === String(id); });
+  if(!s) return;
+  _editandoSafraId = s.id;
+  document.getElementById('safra-nome').value = s.nome;
+  document.getElementById('safra-data-inicio').value = String(s.data_inicio).slice(0,10);
+  document.getElementById('safra-data-fim').value = String(s.data_fim).slice(0,10);
+  document.getElementById('safra-btn-salvar').textContent = 'Salvar Alterações';
+  document.getElementById('safra-btn-cancelar').style.display = 'block';
+}
+function cancelarEdicaoSafra() {
+  _editandoSafraId = null;
+  document.getElementById('safra-nome').value = '';
+  document.getElementById('safra-data-inicio').value = '';
+  document.getElementById('safra-data-fim').value = '';
+  document.getElementById('safra-btn-salvar').textContent = 'Salvar Safra';
+  document.getElementById('safra-btn-cancelar').style.display = 'none';
+}
+function excluirSafra(id) {
+  if(!confirm('Excluir esta safra? Isso não afeta as vendas já lançadas.')) return;
+  mostrarCarregando(true);
+  supa('safras?id=eq.' + id, {method:'DELETE'}).then(function() {
+    mostrarCarregando(false);
+    carregarSafras();
+  }).catch(function(){ mostrarCarregando(false); alert('Erro ao excluir safra.'); });
+}
+function abrirSafras() {
+  document.getElementById('modal-safras').classList.add('show');
+}
+function selecionarSafra() {
+  var id = document.getElementById('fin-safra-select').value;
+  if(id === 'geral') {
+    document.getElementById('fin-data-de').value = '';
+    document.getElementById('fin-data-ate').value = '';
+  } else {
+    var s = _safras.find(function(x){ return String(x.id) === id; });
+    if(s) {
+      document.getElementById('fin-data-de').value = String(s.data_inicio).slice(0,10);
+      document.getElementById('fin-data-ate').value = String(s.data_fim).slice(0,10);
+    }
+  }
+  renderFinanceiro();
+}
+
 // ── FINANCEIRO ──
 function renderFinanceiro() {
   var fDataDe = document.getElementById('fin-data-de').value;
@@ -1217,17 +1363,32 @@ function renderFinanceiro() {
     });
     _finDados = fil;
     _finAtual = 1;
-    var totalVendas=0, totalSacas=0, comAberto=0, comPago=0, cntAberto=0, cntPago=0, vendasAberto=0, cntVendasAberto=0;
+    var totalVendas=0, totalSacas=0, comAberto=0, comPago=0, cntAberto=0, cntPago=0, vendasAberto=0, cntVendasAberto=0, vencendo=0, cntVencendo=0, cntVencidas=0, cntFuturas=0;
+    var hojeD = new Date(); hojeD.setHours(0,0,0,0);
+    var limiteVenc = new Date(hojeD); limiteVenc.setDate(limiteVenc.getDate()+7);
     fil.forEach(function(f) {
       totalVendas += parseFloat(f.total_final)||0;
       totalSacas += parseFloat(f.sacas)||0;
       var com = parseFloat(f.comissao_total)||0;
       if(f.comissao_recebida){ comPago+=com; cntPago++; }
       else if(com>0){ comAberto+=com; cntAberto++; }
-      if(f.status !== 'pago'){ vendasAberto += parseFloat(f.total_final)||0; cntVendasAberto++; }
+      if(f.status !== 'pago'){
+        vendasAberto += parseFloat(f.total_final)||0; cntVendasAberto++;
+        if(f.vencimento) {
+          var dv = parseDataBR(f.vencimento);
+          if(dv && dv <= limiteVenc) {
+            vencendo += parseFloat(f.total_final)||0; cntVencendo++;
+            if(dv < hojeD) cntVencidas++; else cntFuturas++;
+          }
+        }
+      }
     });
     document.getElementById('fin-vendas-aberto').textContent = fmt(vendasAberto);
     document.getElementById('fin-vendas-aberto-qt').textContent = cntVendasAberto + ' em aberto';
+    document.getElementById('fin-vencendo').textContent = fmt(vencendo);
+    document.getElementById('fin-vencendo-qt').textContent = cntVencendo + ' na semana';
+    document.getElementById('fin-vencidas-qt').textContent = '\u{1F534} ' + cntVencidas + ' vencida(s)';
+    document.getElementById('fin-vencendo-futuras-qt').textContent = '\u{1F7E1} ' + cntFuturas + ' a vencer';
     document.getElementById('fin-total-vendas').textContent = fmt(totalVendas);
     document.getElementById('fin-total-notas').textContent = fil.length + ' nota' + (fil.length!==1?'s':'');
     document.getElementById('fin-total-sacas').textContent = totalSacas.toLocaleString('pt-BR');
@@ -1279,6 +1440,33 @@ function renderListaFinanceiro() {
     }).join('');
   renderPaginacaoFin();
 }
+var MODAL_PG_SIZE = 5;
+var _modalDados = {}, _modalPag = {}, _modalRender = {}, _modalVazio = {};
+function renderModalPaginado(listaId, pagId, dados, vazioMsg, itemFn) {
+  _modalDados[listaId] = dados;
+  _modalRender[listaId] = itemFn;
+  _modalVazio[listaId] = vazioMsg;
+  _modalPag[listaId] = 1;
+  desenharModalPagina(listaId, pagId);
+}
+function desenharModalPagina(listaId, pagId) {
+  var dados = _modalDados[listaId]||[];
+  var el = document.getElementById(listaId);
+  var pagEl = document.getElementById(pagId);
+  if(!dados.length){ el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">'+_modalVazio[listaId]+'</div>'; pagEl.innerHTML = ''; return; }
+  var pg = _modalPag[listaId];
+  var start = (pg-1)*MODAL_PG_SIZE;
+  el.innerHTML = dados.slice(start, start+MODAL_PG_SIZE).map(_modalRender[listaId]).join('');
+  var totalPgs = Math.ceil(dados.length/MODAL_PG_SIZE);
+  if(totalPgs<=1){ pagEl.innerHTML = ''; return; }
+  var btns = '';
+  for(var i=1;i<=totalPgs;i++) btns += '<button class="pg-btn'+(i===pg?' ativo':'')+'" onclick="irPaginaModal(\''+listaId+'\',\''+pagId+'\','+i+')">'+i+'</button>';
+  pagEl.innerHTML = btns;
+}
+function irPaginaModal(listaId, pagId, pg) {
+  _modalPag[listaId] = pg;
+  desenharModalPagina(listaId, pagId);
+}
 function abrirDetalheComissao(tipo) {
   var fil = (_finDados||[]).filter(function(f) {
     var com = parseFloat(f.comissao_total)||0;
@@ -1286,45 +1474,64 @@ function abrirDetalheComissao(tipo) {
     return tipo === 'aberto' ? !f.comissao_recebida : f.comissao_recebida;
   });
   document.getElementById('modal-comissao-titulo').innerHTML = (tipo==='aberto'?'Comiss&#xe3;o a Receber':'Comiss&#xe3;o Recebida') + ' (' + fil.length + ')';
-  var el = document.getElementById('modal-comissao-lista');
-  if(!fil.length) {
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Nenhuma nota.</div>';
-  } else {
-    el.innerHTML = fil.map(function(f) {
-      var com = parseFloat(f.comissao_total)||0;
-      return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0">' +
-        '<div style="display:flex;justify-content:space-between"><strong>'+f.cliente+'</strong><span style="font-size:12px;color:#aaa">#'+f.num_nota+'</span></div>' +
-        '<div style="font-size:12px;color:#888;margin-top:4px">'+fmtData(f.data_venda)+' &middot; '+(parseFloat(f.sacas)||0)+' sacas &middot; '+f.cidade+'</div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px;flex-wrap:wrap">' +
-          '<span style="font-size:14px;color:#555">Venda: <strong>'+fmt(parseFloat(f.total_final)||0)+'</strong></span>' +
-          '<span style="font-size:14px;font-weight:700;color:#1a5c2a">Com: '+fmt(com)+'</span>' +
-          '<button class="btn-sm" style="background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a" onclick="editarComissao(\' + f.id + \',' + com + ')">&#x270F; Editar</button>' +
-          (tipo==='aberto' ? '<button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="marcarComissaoRecebida(\' + f.id + \')">&#x2705; Recebi</button>' : '') +
-        '</div>' +
-      '</div>';
-    }).join('');
-  }
+  renderModalPaginado('modal-comissao-lista', 'modal-comissao-pag', fil, 'Nenhuma nota.', function(f) {
+    var com = parseFloat(f.comissao_total)||0;
+    return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0">' +
+      '<div style="display:flex;justify-content:space-between"><strong>'+f.cliente+'</strong><span style="font-size:12px;color:#aaa">#'+f.num_nota+'</span></div>' +
+      '<div style="font-size:12px;color:#888;margin-top:4px">'+fmtData(f.data_venda)+' &middot; '+(parseFloat(f.sacas)||0)+' sacas &middot; '+f.cidade+'</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px;flex-wrap:wrap">' +
+        '<span style="font-size:14px;color:#555">Venda: <strong>'+fmt(parseFloat(f.total_final)||0)+'</strong></span>' +
+        '<span style="font-size:14px;font-weight:700;color:#1a5c2a">Com: '+fmt(com)+'</span>' +
+        '<button class="btn-sm" style="background:#f5faf5;color:#1a5c2a;border:1px solid #1a5c2a" onclick="editarComissao(\''+f.id+'\','+com+')">&#x270F; Editar</button>' +
+        (tipo==='aberto' ? '<button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="marcarComissaoRecebida(\''+f.id+'\')">&#x2705; Recebi</button>' : '') +
+      '</div>' +
+    '</div>';
+  });
   document.getElementById('modal-comissao').classList.add('show');
 }
 function abrirDetalheVendasAberto() {
   var fil = (_finDados||[]).filter(function(f) { return f.status !== 'pago'; });
   document.getElementById('modal-vendas-aberto-titulo').innerHTML = 'Vendas em Aberto (' + fil.length + ')';
-  var el = document.getElementById('modal-vendas-aberto-lista');
-  if(!fil.length) {
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Nenhuma nota em aberto.</div>';
-  } else {
-    el.innerHTML = fil.map(function(f) {
+  renderModalPaginado('modal-vendas-aberto-lista', 'modal-vendas-aberto-pag', fil, 'Nenhuma nota em aberto.', function(f) {
+    return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0">' +
+      '<div style="display:flex;justify-content:space-between"><strong>'+f.cliente+'</strong><span style="font-size:12px;color:#aaa">#'+f.num_nota+'</span></div>' +
+      '<div style="font-size:12px;color:#888;margin-top:4px">'+fmtData(f.data_venda)+' &middot; '+(parseFloat(f.sacas)||0)+' sacas &middot; '+f.cidade+(f.vencimento?' &middot; Venc: '+fmtData(f.vencimento):'')+'</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px;flex-wrap:wrap">' +
+        '<span style="font-size:14px;font-weight:700;color:#c0392b">Venda: '+fmt(parseFloat(f.total_final)||0)+'</span>' +
+        '<button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="togglePago(\''+f.id+'\',\'aberto\');document.getElementById(\'modal-vendas-aberto\').classList.remove(\'show\')">&#x2705; Marcar pago</button>' +
+      '</div>' +
+    '</div>';
+  });
+  document.getElementById('modal-vendas-aberto').classList.add('show');
+}
+function abrirDetalheVencendo() {
+  var limiteVenc = new Date(); limiteVenc.setHours(0,0,0,0); limiteVenc.setDate(limiteVenc.getDate()+7);
+  var fil = (_finDados||[]).filter(function(f) {
+    if(f.status === 'pago' || !f.vencimento) return false;
+    var dv = parseDataBR(f.vencimento);
+    return dv && dv <= limiteVenc;
+  });
+  document.getElementById('modal-vencendo-titulo').innerHTML = 'Vencendo em Breve (' + fil.length + ')';
+  var hojeD = new Date(); hojeD.setHours(0,0,0,0);
+  var vencidas = fil.filter(function(f){ return parseDataBR(f.vencimento) < hojeD; });
+  var futuras = fil.filter(function(f){ return parseDataBR(f.vencimento) >= hojeD; });
+  document.getElementById('modal-vencidas-titulo').innerHTML = '&#x1F534; Vencidas (' + vencidas.length + ')';
+  document.getElementById('modal-vencendo-sub-titulo').innerHTML = '&#x1F7E1; Vencendo em Breve (' + futuras.length + ')';
+  var itemFn = function(vencida) {
+    return function(f) {
       return '<div style="padding:12px 0;border-bottom:1px solid #f0f0f0">' +
         '<div style="display:flex;justify-content:space-between"><strong>'+f.cliente+'</strong><span style="font-size:12px;color:#aaa">#'+f.num_nota+'</span></div>' +
-        '<div style="font-size:12px;color:#888;margin-top:4px">'+fmtData(f.data_venda)+' &middot; '+(parseFloat(f.sacas)||0)+' sacas &middot; '+f.cidade+(f.vencimento?' &middot; Venc: '+fmtData(f.vencimento):'')+'</div>' +
+        '<div style="font-size:12px;color:'+(vencida?'#c0392b':'#888')+';margin-top:4px">'+(vencida?'Vencida em ':'Vence em ')+fmtData(f.vencimento)+' &middot; '+f.cidade+'</div>' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px;flex-wrap:wrap">' +
-          '<span style="font-size:14px;font-weight:700;color:#c0392b">Venda: '+fmt(parseFloat(f.total_final)||0)+'</span>' +
-          '<button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="togglePago(\''+f.id+'\',\'aberto\');document.getElementById(\'modal-vendas-aberto\').classList.remove(\'show\')">&#x2705; Marcar pago</button>' +
+          '<span style="font-size:14px;font-weight:700;color:#f9a825">'+fmt(parseFloat(f.total_final)||0)+'</span>' +
+          '<button class="btn-sm" style="background:#1a5c2a;color:#fff" onclick="togglePago(\''+f.id+'\',\'aberto\');document.getElementById(\'modal-vencendo\').classList.remove(\'show\')">&#x2705; Marcar pago</button>' +
         '</div>' +
       '</div>';
-    }).join('');
-  }
-  document.getElementById('modal-vendas-aberto').classList.add('show');
+    };
+  };
+  renderModalPaginado('modal-vencidas-lista', 'modal-vencidas-pag', vencidas, 'Nenhuma nota vencida.', itemFn(true));
+  renderModalPaginado('modal-vencendo-lista', 'modal-vencendo-pag', futuras, 'Nenhuma nota vencendo na semana.', itemFn(false));
+  document.getElementById('modal-vencendo').classList.add('show');
 }
 function editarComissao(id, comAtual) {
   var nova = prompt('Novo valor da comissão (R$):', (parseFloat(comAtual)||0).toFixed(2).replace('.',','));
