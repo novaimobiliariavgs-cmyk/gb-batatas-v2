@@ -127,6 +127,12 @@ input:checked+.slider:before{transform:translateX(20px)}
 </style>
 </head>
 <body>
+<div id="login-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#1a5c2a;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px">
+  <img src="logo.jpg" alt="GB Batatas" style="width:120px;border-radius:12px"/>
+  <input type="password" id="login-senha" placeholder="Senha" style="width:220px;padding:12px;border-radius:10px;border:none;font-size:16px;text-align:center" onkeydown="if(event.key==='Enter')fazerLogin()"/>
+  <button onclick="fazerLogin()" style="width:220px;padding:12px;border-radius:10px;border:none;background:#fff;color:#1a5c2a;font-weight:700;font-size:15px;cursor:pointer">Entrar</button>
+  <p id="login-erro" style="display:none;color:#ffcccc;font-size:13px">Senha incorreta</p>
+</div>
 <div id="doc-print" class="no-print"></div>
 <div id="loading" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-size:16px;gap:12px"><div style="width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite"></div>Carregando...</div>
 
@@ -543,6 +549,20 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 </div>
 <script>
+
+var LOGIN_SENHA = 'gbbatatas'; // ponytail: senha unica compartilhada, trocar aqui se precisar
+(function(){
+  if(localStorage.getItem('gb_logado') === '1') { document.getElementById('login-overlay').style.display='none'; }
+})();
+function fazerLogin() {
+  var v = document.getElementById('login-senha').value;
+  if(v === LOGIN_SENHA) {
+    localStorage.setItem('gb_logado', '1');
+    document.getElementById('login-overlay').style.display='none';
+  } else {
+    document.getElementById('login-erro').style.display='block';
+  }
+}
 
 var SUPA_URL = 'https://totflonespmtlwdtnafg.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvdGZsb25lc3BtdGx3ZHRuYWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMzk1MzEsImV4cCI6MjA5NzgxNTUzMX0.-9w-YmzV8jhBWPp3Dds_DmS3Vgy5te-BoSb1OOckMYc';
